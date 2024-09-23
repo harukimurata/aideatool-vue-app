@@ -78,6 +78,11 @@ const router = createRouter({
       name: 'technology_3',
       component: () => import('../views/Blog/Technology/index3.vue')
     },
+    {
+      path: '/game',
+      name: 'Game',
+      component: () => import('../views/Game/MainView.vue')
+    },
     // {
     //   path: '/nengajou',
     //   name: 'Nengajou',
