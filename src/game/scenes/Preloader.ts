@@ -1,4 +1,5 @@
 import { Scene } from 'phaser'
+import SceneKey from '../const/SceneKey'
 import TextureKey from '../const/TextureKey'
 
 export class Preloader extends Scene {
@@ -31,6 +32,7 @@ export class Preloader extends Scene {
     this.load.setPath('assets')
 
     this.load.image('star', 'star.png')
+    this.load.image(TextureKey.SlotBG, 'image/slot/slot_bg.png')
     this.load.image(TextureKey.SlotMachineOver, 'image/slot/slot_machine_over.png')
     this.load.image(TextureKey.SlotMachineUnder, 'image/slot/slot_machine_under.png')
     this.load.image(TextureKey.SlotStartA, 'image/slot/button/slot_start_a.png')
@@ -60,6 +62,6 @@ export class Preloader extends Scene {
     //  For example, you can define global animations here, so we can use them in other scenes.
 
     //  Move to the MainMenu. You could also swap this for a Scene Transition, such as a camera fade.
-    this.scene.start('MainMenu')
+    this.scene.start(SceneKey.SlotScene)
   }
 }

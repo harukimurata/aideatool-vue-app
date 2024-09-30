@@ -1,6 +1,7 @@
 import { GameObjects, Scene } from 'phaser'
 
 import { EventBus } from '../EventBus'
+import SceneKey from '../const/SceneKey'
 import TextureKey from '../const/TextureKey'
 import ImageButton from '../components/ImageButton'
 import { delayPromise } from '../helper'
@@ -60,7 +61,7 @@ export class SlotScene extends Scene {
   ]
 
   constructor() {
-    super('MainMenu')
+    super(SceneKey.SlotScene)
   }
 
   /**
@@ -69,7 +70,7 @@ export class SlotScene extends Scene {
   create() {
     const gameWidth = this.scale.width
     const gameHeight = this.scale.height
-    this.background = this.add.image(512, 384, 'background')
+    this.background = this.add.image(gameWidth / 2, gameHeight / 2, TextureKey.SlotBG)
     this.slotMachineUnder = this.add
       .image(gameWidth / 2, gameHeight / 2 - 86, TextureKey.SlotMachineUnder)
       .setScale(1.15)
