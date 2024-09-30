@@ -9,17 +9,17 @@ import { Preloader } from './scenes/Preloader'
 //  https://newdocs.phaser.io/docs/3.70.0/Phaser.Types.Core.GameConfig
 const config: Phaser.Types.Core.GameConfig = {
   // type: AUTO,
-  // width: 900,
-  // height: 900,
+  width: 600,
+  //height: 650,
   input: {
     touch: true
   },
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.NONE,
-    autoRound: true,
-    width: 600,
-    height: 650
+    autoRound: true
+    // width: 600,
+    // height: 650
   },
   parent: 'game-container',
   backgroundColor: '#028af8',

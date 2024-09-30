@@ -1,7 +1,7 @@
 <template>
   <header-component title="Game"></header-component>
   <PhaserGame ref="phaserRef" @current-active-scene="currentScene" />
-  <div>
+  <!-- <div>
     <div>
       <button class="button" @click="changeScene">Change Scene</button>
     </div>
@@ -15,7 +15,7 @@
     <div>
       <button class="button" @click="addSprite">Add New Sprite</button>
     </div>
-  </div>
+  </div> -->
 </template>
 
 <script lang="ts" setup>
@@ -35,19 +35,6 @@ const changeScene = () => {
   if (scene) {
     //  Call the changeScene method defined in the `MainMenu`, `Game` and `GameOver` Scenes
     scene.changeScene()
-  }
-}
-
-const moveSprite = () => {
-  if (phaserRef.value !== undefined) {
-    const scene = toRaw(phaserRef.value.scene) as MainMenu
-
-    if (scene) {
-      // Get the update logo position
-      ;(scene as MainMenu).moveLogo(({ x, y }) => {
-        spritePosition.value = { x, y }
-      })
-    }
   }
 }
 
