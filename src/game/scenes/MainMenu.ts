@@ -348,6 +348,7 @@ export class MainMenu extends Scene {
       await delayPromise(this, duration)
       this.coinNumText.setText('COIN: ' + oldValue)
     }
+    this.coinNum = newCoin
   }
 
   /**
