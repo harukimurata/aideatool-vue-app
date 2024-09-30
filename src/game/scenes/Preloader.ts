@@ -30,14 +30,13 @@ export class Preloader extends Scene {
     //  Load the assets for the game - Replace with your own assets
     this.load.setPath('assets')
 
-    this.load.image('logo', 'logo.png')
     this.load.image('star', 'star.png')
-    this.load.image(TextureKey.PushButton, 'image/push_button.png')
-    this.load.image(TextureKey.PushHoverButton, 'image/push_h_button.png')
     this.load.image(TextureKey.SlotMachineOver, 'image/slot/slot_machine_over.png')
     this.load.image(TextureKey.SlotMachineUnder, 'image/slot/slot_machine_under.png')
     this.load.image(TextureKey.SlotStartA, 'image/slot/button/slot_start_a.png')
     this.load.image(TextureKey.SlotStartB, 'image/slot/button/slot_start_b.png')
+    this.load.image(TextureKey.SlotBetA, 'image/slot/button/bet_button_a.png')
+    this.load.image(TextureKey.SlotBetB, 'image/slot/button/bet_button_b.png')
     this.load.image(TextureKey.SlotButtonA, 'image/slot/button/slot_button_a.png')
     this.load.image(TextureKey.SlotButtonB, 'image/slot/button/slot_button_b.png')
     this.load.image(TextureKey.SlotButtonC, 'image/slot/button/slot_button_c.png')

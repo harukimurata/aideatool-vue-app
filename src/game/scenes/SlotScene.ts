@@ -13,7 +13,7 @@ enum REEL_NUMBER {
   RIGHT
 }
 
-export class MainMenu extends Scene {
+export class SlotScene extends Scene {
   background!: GameObjects.Image
   betNumText!: GameObjects.Text
   addCoinText!: GameObjects.Text
@@ -131,16 +131,16 @@ export class MainMenu extends Scene {
 
     this.slotBetButton = new ImageButton(
       this,
-      70,
+      80,
       gameHeight / 2 + 70,
-      TextureKey.SlotButtonE,
-      TextureKey.SlotButtonF,
+      TextureKey.SlotBetA,
+      TextureKey.SlotBetB,
       () => {
         if (!this.isSlotStart) {
           this.slotBet()
         }
       }
-    ).setScale(0.9)
+    ).setScale(0.6)
     this.add.existing(this.slotBetButton)
 
     this.slotStartButton = new ImageButton(
@@ -343,6 +343,19 @@ export class MainMenu extends Scene {
     let oldValue = this.coinNum
     const duration = 30
     const addValue = 1
+    this.tweens.add({
+      targets: this.coinNumText,
+      x: {
+        from: this.coinNumText.x,
+        to: this.coinNumText.x - 3
+      },
+      y: {
+        from: this.coinNumText.y,
+        to: this.coinNumText.y - 3
+      },
+      duration: 100,
+      repeat: 10
+    })
     while (oldValue !== newCoin) {
       oldValue = oldValue + addValue
       await delayPromise(this, duration)
@@ -395,9 +408,5 @@ export class MainMenu extends Scene {
       }
     }
     return saveNumber
-  }
-
-  changeScene() {
-    this.scene.start('Game')
   }
 }
