@@ -4,6 +4,7 @@ import { EventBus } from '../EventBus'
 import SceneKey from '../const/SceneKey'
 import TextureKey from '../const/TextureKey'
 import ImageButton from '../components/ImageButton'
+import { calcSlotHand } from '../utils'
 import { delayPromise } from '../helper'
 
 const MAX_SLOT_BET = 3
@@ -36,8 +37,9 @@ export class SlotScene extends Scene {
   slotChargeButton3!: GameObjects.Image
 
   private betCount = 0
+  private isBet = false
   private addCoinNum = 0
-  private coinNum = 10
+  private coinNum = 1000
   private saveStopNumber: number | null = null
   private saveStopNumber1: number | null = null
   private saveStopNumber2: number | null = null
@@ -207,6 +209,15 @@ export class SlotScene extends Scene {
    * ゲームループ
    */
   update() {
+    if (!this.isBet) {
+      if (this.betCount < 1) {
+        this.slotStartButton.setTexture(TextureKey.SlotStartB)
+      } else {
+        this.isBet = true
+        this.slotStartButton.setTexture(TextureKey.SlotStartA)
+      }
+    }
+
     if (this.isSlotStart) {
       const slotNumber1 = Math.floor(Math.random() * 9) + 1
       const slotNumber2 = Math.floor(Math.random() * 9) + 1
@@ -292,11 +303,12 @@ export class SlotScene extends Scene {
         this.saveStopNumber3 &&
         this.saveStopNumber
       ) {
-        if (
-          this.saveStopNumber1 == this.saveStopNumber2 &&
-          this.saveStopNumber2 == this.saveStopNumber3
-        ) {
-          const addCoin = this.betCount * 2 * this.saveStopNumber
+        const addCoin = calcSlotHand(
+          this.saveStopNumber1,
+          this.saveStopNumber2,
+          this.saveStopNumber3
+        )
+        if (addCoin > 0) {
           this.addCoinNum = addCoin
           const newCoinNum = this.coinNum + addCoin
           this.addCoinAnimation(newCoinNum)
@@ -383,6 +395,7 @@ export class SlotScene extends Scene {
         this.saveStopNumber2 = null
         this.saveStopNumber3 = null
         this.betCount = 0
+        this.isBet = false
         this.addCoinNum = 0
         this.betNumText.setText('Bet: ' + this.betCount)
       })
