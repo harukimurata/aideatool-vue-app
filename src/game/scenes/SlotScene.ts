@@ -37,7 +37,7 @@ export class SlotScene extends Scene {
 
   private betCount = 0
   private addCoinNum = 0
-  private coinNum = 1000
+  private coinNum = 10
   private saveStopNumber: number | null = null
   private saveStopNumber1: number | null = null
   private saveStopNumber2: number | null = null
@@ -137,7 +137,7 @@ export class SlotScene extends Scene {
       TextureKey.SlotBetA,
       TextureKey.SlotBetB,
       () => {
-        if (!this.isSlotStart) {
+        if (!this.isSlotStart && this.coinNum > 0) {
           this.slotBet()
         }
       }
@@ -151,7 +151,7 @@ export class SlotScene extends Scene {
       TextureKey.SlotStartA,
       TextureKey.SlotStartB,
       () => {
-        if (!this.isSlotStart) {
+        if (!this.isSlotStart && this.betCount >= 1) {
           this.slotStart()
         }
       }
