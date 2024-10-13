@@ -9,7 +9,7 @@ import { delayPromise } from '../helper'
 import { SPECIAL_HANDS } from '../const/SlotHand'
 
 const MAX_SLOT_BET = 3
-const ADD_DOUBLE_UP_CHANCE = 10
+const ADD_DOUBLE_UP_CHANCE = 11
 const COIN_NUM_POS_X = 450
 const COIN_NUM_POS_Y = 140
 
@@ -362,13 +362,13 @@ export class SlotScene extends Scene {
         break
 
       default:
-        //通常
-        this.addCoinNum = hand
         let newCoinNum = 0
         if (this.doubleUpChanceCount > 0) {
-          newCoinNum = this.coinNum + hand * 2
+          this.addCoinNum = hand * 2
+          newCoinNum = this.coinNum + this.addCoinNum
         } else {
-          newCoinNum = this.coinNum + hand
+          this.addCoinNum = hand
+          newCoinNum = this.coinNum + this.addCoinNum
         }
 
         this.addCoinAnimation(newCoinNum)
