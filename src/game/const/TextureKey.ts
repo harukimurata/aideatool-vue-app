@@ -23,7 +23,11 @@ enum TextureKey {
   SlotNumber6 = 'slot_number_6',
   SlotNumber7 = 'slot_number_7',
   SlotNumber8 = 'slot_number_8',
-  SlotNumber9 = 'slot_number_9'
+  SlotNumber9 = 'slot_number_9',
+  SlotReplay = 'replay',
+  DoubleUp = 'double_up',
+  DoubleUpIconA = 'double_up_icon_a',
+  DoubleUpIconB = 'double_up_icon_b'
 }
 
 export default TextureKey

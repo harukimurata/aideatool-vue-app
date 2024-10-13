@@ -6,8 +6,10 @@ import TextureKey from '../const/TextureKey'
 import ImageButton from '../components/ImageButton'
 import { calcSlotHand } from '../utils'
 import { delayPromise } from '../helper'
+import { SPECIAL_HANDS } from '../const/SlotHand'
 
 const MAX_SLOT_BET = 3
+const MAX_DOUBLE_UP_CHANCE = 3
 const COIN_NUM_POS_X = 450
 const COIN_NUM_POS_Y = 140
 
@@ -22,6 +24,7 @@ export class SlotScene extends Scene {
   betNumText!: GameObjects.Text
   addCoinText!: GameObjects.Text
   coinNumText!: GameObjects.Text
+  doubleUpChanceNumText!: GameObjects.Text
 
   slotMachineUnder!: GameObjects.Image
   slotMachineOver!: GameObjects.Image
@@ -37,6 +40,7 @@ export class SlotScene extends Scene {
   slotChargeButton1!: GameObjects.Image
   slotChargeButton2!: GameObjects.Image
   slotChargeButton3!: GameObjects.Image
+  doubleChanceIcon!: GameObjects.Image
 
   private betCount = 0
   private isBet = false
@@ -50,6 +54,8 @@ export class SlotScene extends Scene {
   private isStopNumber1 = false
   private isStopNumber2 = false
   private isStopNumber3 = false
+  private doubleUpChanceCount = 10
+  private isReplay = false
 
   private slotNumberArray: string[] = [
     TextureKey.SlotNumber0,
@@ -61,7 +67,9 @@ export class SlotScene extends Scene {
     TextureKey.SlotNumber6,
     TextureKey.SlotNumber7,
     TextureKey.SlotNumber8,
-    TextureKey.SlotNumber9
+    TextureKey.SlotNumber9,
+    TextureKey.SlotReplay,
+    TextureKey.DoubleUp
   ]
 
   constructor() {
@@ -100,6 +108,8 @@ export class SlotScene extends Scene {
       .image(gameWidth / 2 + 170, 190, TextureKey.SlotButtonC)
       .setScale(0.6)
 
+    this.doubleChanceIcon = this.add.image(465, 90, TextureKey.DoubleUpIconA).setScale(0.8)
+
     this.betNumText = this.add
       .text(100, 140, 'Bet: ' + this.betCount, {
         fontFamily: 'Arial Black',
@@ -112,7 +122,7 @@ export class SlotScene extends Scene {
       .setDepth(100)
 
     this.addCoinText = this.add
-      .text(500, 85, '+ ' + this.addCoinNum, {
+      .text(400, 85, '+ ' + this.addCoinNum, {
         fontFamily: 'Cambria',
         fontSize: 38,
         color: '#ff0000',
@@ -122,6 +132,17 @@ export class SlotScene extends Scene {
       .setOrigin(0.5)
       .setDepth(100)
       .setAlpha(0)
+
+    this.doubleUpChanceNumText = this.add
+      .text(520, 100, '× ' + this.doubleUpChanceCount, {
+        fontFamily: 'Cambria',
+        fontSize: 28,
+        color: '#ffffff',
+        stroke: '#000000',
+        strokeThickness: 8
+      })
+      .setOrigin(0.5)
+      .setDepth(100)
 
     this.coinNumText = this.add
       .text(COIN_NUM_POS_X, COIN_NUM_POS_Y, 'COIN: ' + this.coinNum, {
@@ -221,9 +242,9 @@ export class SlotScene extends Scene {
     }
 
     if (this.isSlotStart) {
-      const slotNumber1 = Math.floor(Math.random() * 9) + 1
-      const slotNumber2 = Math.floor(Math.random() * 9) + 1
-      const slotNumber3 = Math.floor(Math.random() * 9) + 1
+      const slotNumber1 = Math.floor(Math.random() * 11) + 1
+      const slotNumber2 = Math.floor(Math.random() * 11) + 1
+      const slotNumber3 = Math.floor(Math.random() * 11) + 1
 
       if (!this.isStopNumber1) {
         const slotNumber = this.expectedValue(slotNumber1)
@@ -268,6 +289,9 @@ export class SlotScene extends Scene {
    */
   private slotStart() {
     this.isSlotStart = true
+    if (this.isReplay) {
+      this.isReplay = false
+    }
   }
 
   /**
@@ -311,9 +335,7 @@ export class SlotScene extends Scene {
           this.saveStopNumber3
         )
         if (addCoin > 0) {
-          this.addCoinNum = addCoin
-          const newCoinNum = this.coinNum + addCoin
-          this.addCoinAnimation(newCoinNum)
+          this.calcSpecialHands(addCoin)
         }
       }
     }
@@ -388,9 +410,16 @@ export class SlotScene extends Scene {
   private initSlot() {
     if (this.isStopNumber1 && this.isStopNumber2 && this.isStopNumber3) {
       this.time.delayedCall(500, () => {
-        this.slotChargeButton1.setTexture(TextureKey.SlotButtonC)
-        this.slotChargeButton2.setTexture(TextureKey.SlotButtonC)
-        this.slotChargeButton3.setTexture(TextureKey.SlotButtonC)
+        if (!this.isReplay) {
+          this.slotChargeButton1.setTexture(TextureKey.SlotButtonC)
+          this.slotChargeButton2.setTexture(TextureKey.SlotButtonC)
+          this.slotChargeButton3.setTexture(TextureKey.SlotButtonC)
+          this.betCount = 0
+          this.isBet = false
+          this.addCoinNum = 0
+          this.betNumText.setText('Bet: ' + this.betCount)
+        }
+
         this.isStopNumber1 = false
         this.isStopNumber2 = false
         this.isStopNumber3 = false
@@ -399,10 +428,13 @@ export class SlotScene extends Scene {
         this.saveStopNumber1 = null
         this.saveStopNumber2 = null
         this.saveStopNumber3 = null
-        this.betCount = 0
-        this.isBet = false
-        this.addCoinNum = 0
-        this.betNumText.setText('Bet: ' + this.betCount)
+
+        this.doubleUpChanceCount = this.doubleUpChanceCount - 1
+        if (this.doubleUpChanceCount < 0) {
+          this.doubleUpChanceNumText.setText('× ' + 0)
+        } else {
+          this.doubleUpChanceNumText.setText('× ' + this.doubleUpChanceCount)
+        }
       })
     }
   }
@@ -418,7 +450,7 @@ export class SlotScene extends Scene {
     }
 
     if (this.betCount == 2) {
-      if (Math.floor(Math.random() * 5) === 0) {
+      if (Math.floor(Math.random() * 3) === 0) {
         return this.saveStopNumber
       }
     } else if (this.betCount == 3) {
@@ -427,5 +459,37 @@ export class SlotScene extends Scene {
       }
     }
     return saveNumber
+  }
+
+  private calcSpecialHands(hand: number) {
+    switch (hand) {
+      case SPECIAL_HANDS.REPLAY:
+        //リプレイ
+        this.isReplay = true
+        this.betCount = 3
+        this.betNumText.setText('Bet: ' + this.betCount * 2)
+        this.slotChargeButton1.setTexture(TextureKey.SlotButtonD)
+        this.slotChargeButton2.setTexture(TextureKey.SlotButtonD)
+        this.slotChargeButton3.setTexture(TextureKey.SlotButtonD)
+        break
+
+      case SPECIAL_HANDS.DOUBLE_UP:
+        //ダブルアップチャンス
+        this.doubleUpChanceCount = this.doubleUpChanceCount + MAX_DOUBLE_UP_CHANCE
+        break
+
+      default:
+        //通常
+        this.addCoinNum = hand
+        let newCoinNum = 0
+        if (this.doubleUpChanceCount > 0) {
+          newCoinNum = this.coinNum + hand * 2
+        } else {
+          newCoinNum = this.coinNum + hand
+        }
+
+        this.addCoinAnimation(newCoinNum)
+        break
+    }
   }
 }

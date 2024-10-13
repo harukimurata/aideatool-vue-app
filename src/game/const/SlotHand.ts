@@ -5,6 +5,11 @@ interface SlotHand {
   value: number
 }
 
+export const SPECIAL_HANDS = {
+  REPLAY: 99900,
+  DOUBLE_UP: 99901
+}
+
 export const slotHands: SlotHand[] = [
   {
     Number1: 1,
@@ -59,6 +64,18 @@ export const slotHands: SlotHand[] = [
     Number2: 9,
     Number3: 9,
     value: 54
+  },
+  {
+    Number1: 10,
+    Number2: 10,
+    Number3: 10,
+    value: SPECIAL_HANDS.REPLAY
+  },
+  {
+    Number1: 11,
+    Number2: 11,
+    Number3: 11,
+    value: SPECIAL_HANDS.DOUBLE_UP
   },
   {
     Number1: 1,

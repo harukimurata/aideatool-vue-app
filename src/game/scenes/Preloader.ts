@@ -55,6 +55,10 @@ export class Preloader extends Scene {
     this.load.image(TextureKey.SlotNumber7, 'image/slot/number/slot_number_7.png')
     this.load.image(TextureKey.SlotNumber8, 'image/slot/number/slot_number_8.png')
     this.load.image(TextureKey.SlotNumber9, 'image/slot/number/slot_number_9.png')
+    this.load.image(TextureKey.SlotReplay, 'image/slot/number/replay.png')
+    this.load.image(TextureKey.DoubleUp, 'image/slot/number/double_up.png')
+    this.load.image(TextureKey.DoubleUpIconA, 'image/slot/button/double_up_icon_a.png')
+    this.load.image(TextureKey.DoubleUpIconB, 'image/slot/button/double_up_icon_b.png')
   }
 
   create() {
