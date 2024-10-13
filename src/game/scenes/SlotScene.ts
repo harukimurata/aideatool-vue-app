@@ -8,6 +8,8 @@ import { calcSlotHand } from '../utils'
 import { delayPromise } from '../helper'
 
 const MAX_SLOT_BET = 3
+const COIN_NUM_POS_X = 450
+const COIN_NUM_POS_Y = 140
 
 enum REEL_NUMBER {
   LEFT,
@@ -122,7 +124,7 @@ export class SlotScene extends Scene {
       .setAlpha(0)
 
     this.coinNumText = this.add
-      .text(450, 140, 'COIN: ' + this.coinNum, {
+      .text(COIN_NUM_POS_X, COIN_NUM_POS_Y, 'COIN: ' + this.coinNum, {
         fontFamily: 'Cambria',
         fontSize: 38,
         color: '#ffffff',
@@ -367,7 +369,10 @@ export class SlotScene extends Scene {
         to: this.coinNumText.y - 3
       },
       duration: 100,
-      repeat: 10
+      repeat: 10,
+      onComplete: () => {
+        this.coinNumText.setPosition(COIN_NUM_POS_X, COIN_NUM_POS_Y)
+      }
     })
     while (oldValue !== newCoin) {
       oldValue = oldValue + addValue
