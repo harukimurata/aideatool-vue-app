@@ -57,24 +57,12 @@ export const slotHands: SlotHand[] = [
     Number1: 8,
     Number2: 8,
     Number3: 8,
-    value: 48
+    value: SPECIAL_HANDS.REPLAY
   },
   {
     Number1: 9,
     Number2: 9,
     Number3: 9,
-    value: 54
-  },
-  {
-    Number1: 10,
-    Number2: 10,
-    Number3: 10,
-    value: SPECIAL_HANDS.REPLAY
-  },
-  {
-    Number1: 11,
-    Number2: 11,
-    Number3: 11,
     value: SPECIAL_HANDS.DOUBLE_UP
   },
   {
@@ -82,35 +70,5 @@ export const slotHands: SlotHand[] = [
     Number2: 2,
     Number3: 3,
     value: 123
-  },
-  {
-    Number1: 7,
-    Number2: 6,
-    Number3: 5,
-    value: 765
-  },
-  {
-    Number1: 9,
-    Number2: 6,
-    Number3: 1,
-    value: 765
-  },
-  {
-    Number1: 3,
-    Number2: 4,
-    Number3: 6,
-    value: 346
-  },
-  {
-    Number1: 3,
-    Number2: 1,
-    Number3: 5,
-    value: 315
-  },
-  {
-    Number1: 2,
-    Number2: 8,
-    Number3: 3,
-    value: 283
   }
 ]
