@@ -5,10 +5,10 @@ import SceneKey from '../const/SceneKey'
 import TextureKey from '../const/TextureKey'
 import ImageButton from '../components/ImageButton'
 
-const BASE_POS_X = 200
-const BASE_POS_Y = 100
-const ADD_BASE_POS_X = 100
-const ADD_BASE_POS_Y = 100
+const BASE_POS_X = 130
+const BASE_POS_Y = 230
+const ADD_BASE_POS_X = 170
+const ADD_BASE_POS_Y = 170
 const NUM_IMAGES = 9
 const HIT_NUMBER = 0
 const MAX_HIT_COUNT = 5
@@ -16,15 +16,15 @@ const MAX_OPEN_SCRATCH_COUNT = 5
 const RESULT_IMAGE_KEYS = [
   {
     value: 3,
-    imageKey: '小吉'
+    imageKey: TextureKey.NengaAtari_1
   },
   {
     value: 4,
-    imageKey: '中吉'
+    imageKey: TextureKey.NengaAtari_2
   },
   {
     value: 5,
-    imageKey: '大吉'
+    imageKey: TextureKey.NengaAtari_3
   }
 ]
 
@@ -34,15 +34,18 @@ interface IMAGE_POS {
 }
 
 export class ScratchScene extends Scene {
+  private gameWidth = 0
+  private gameHeight = 0
+
   private slotNumberArray: string[] = [
-    TextureKey.SlotNumber0, //辰
-    TextureKey.SlotNumber1, //巳
-    TextureKey.SlotNumber2, //午
-    TextureKey.SlotNumber3, //未
-    TextureKey.SlotNumber4 //申
+    TextureKey.NengaSnake, //み
+    TextureKey.NengaHose, //うま
+    TextureKey.NengaSheep, //ひつじ
+    TextureKey.NengaMonkey, //さる
+    TextureKey.NengaChicken //とり
   ]
 
-  private scratchText!: GameObjects.Text
+  private scratchResult!: GameObjects.Image
   initButton!: ImageButton
   private openScratchNum = MAX_OPEN_SCRATCH_COUNT
   private imagePos: IMAGE_POS[] = []
@@ -56,60 +59,23 @@ export class ScratchScene extends Scene {
   }
 
   create() {
-    const gameWidth = this.scale.width
-    const gameHeight = this.scale.height
+    this.gameWidth = this.scale.width
+    this.gameHeight = this.scale.height
 
-    this.scratchText = this.add
-      .text(gameWidth / 2, gameHeight / 2 + 200, '当たり画像', {
-        fontFamily: 'Arial Black',
-        fontSize: 64,
-        color: '#ffffff',
-        stroke: '#000000',
-        strokeThickness: 8,
-        align: 'center'
-      })
-      .setAlpha(0)
-      .setScale(0.2)
-      .setOrigin(0.5)
-      .setDepth(100)
-
-    this.add
-      .text(gameWidth / 2, gameHeight / 2, 'ScratchScene', {
-        fontFamily: 'Arial Black',
-        fontSize: 64,
-        color: '#ffffff',
-        stroke: '#000000',
-        strokeThickness: 8,
-        align: 'center'
-      })
-      .setOrigin(0.5)
-      .setDepth(100)
-
-    //初期化ボタン
-    this.initButton = new ImageButton(
-      this,
-      gameWidth / 2,
-      gameHeight / 2 + 100,
-      TextureKey.SlotStartA,
-      TextureKey.SlotStartB,
-      () => {
-        this.createNumberBox()
-        this.initNumberBox()
-      }
-    ).setScale(0.2)
-    this.initButton.setVisible(false)
-    this.add.existing(this.initButton)
+    this.add.image(this.gameWidth / 2, this.gameHeight / 2, TextureKey.NengaBase)
 
     //スクラッチ番号ボックス生成
     this.createNumberBox()
     for (let i = 0; i < NUM_IMAGES; i++) {
-      this.imageBox[i] = this.add.image(BASE_POS_X, BASE_POS_X, this.slotNumberArray[0])
+      this.imageBox[i] = this.add
+        .image(BASE_POS_X, BASE_POS_X, this.slotNumberArray[0])
+        .setScale(0.9)
       this.selectButtonBox[i] = new ImageButton(
         this,
         BASE_POS_X,
         BASE_POS_Y,
-        TextureKey.SlotStartA,
-        TextureKey.SlotStartB,
+        TextureKey.NengaSilver,
+        TextureKey.NengaSilver,
         () => {
           if (this.openScratchNum > 0) {
             this.tweens.add({
@@ -124,9 +90,29 @@ export class ScratchScene extends Scene {
             console.log('おせないよ')
           }
         }
-      ).setScale(0.6)
+      )
       this.add.existing(this.selectButtonBox[i])
     }
+
+    this.scratchResult = this.add
+      .image(this.gameWidth / 2, this.gameHeight / 2, RESULT_IMAGE_KEYS[0].imageKey)
+      .setAlpha(0)
+      .setVisible(false)
+
+    //初期化ボタン
+    this.initButton = new ImageButton(
+      this,
+      this.gameWidth / 2,
+      this.gameHeight / 2,
+      TextureKey.NengaRetry,
+      TextureKey.NengaRetry,
+      () => {
+        this.createNumberBox()
+        this.initNumberBox()
+      }
+    ).setScale(0.2)
+    this.initButton.setVisible(false)
+    this.add.existing(this.initButton)
 
     //スクラッチ番号ボックスの初期化
     this.initNumberBox()
@@ -137,7 +123,7 @@ export class ScratchScene extends Scene {
   private initNumberBox() {
     this.openScratchNum = MAX_OPEN_SCRATCH_COUNT
     this.openedScratchNumberBox = []
-    this.scratchText.setAlpha(0).setScale(0.2)
+    this.scratchResult.setAlpha(0).setScale(0.2).setVisible(false)
     this.initButton.setScale(0.2).setVisible(false)
 
     let boxNumber = 0
@@ -207,15 +193,24 @@ export class ScratchScene extends Scene {
   private result() {
     const hitCount = this.openedScratchNumberBox.filter((number) => number == HIT_NUMBER).length
     const resultImageLKey =
-      RESULT_IMAGE_KEYS.find((key) => key.value == hitCount)?.imageKey || 'はずれ'
-    this.scratchText.setText(resultImageLKey)
+      RESULT_IMAGE_KEYS.find((key) => key.value == hitCount)?.imageKey || TextureKey.NengaHazure
+    if (resultImageLKey == TextureKey.NengaHazure) {
+      this.initButton.setPosition(this.gameWidth / 2, this.gameHeight / 2 + 80)
+    } else {
+      this.initButton.setPosition(this.gameWidth / 2, this.gameHeight / 2 + 220)
+    }
+    this.scratchResult.setTexture(resultImageLKey).setVisible(true)
     this.initButton.setVisible(true)
+    this.initButton.inactiveButton()
     this.tweens.add({
-      targets: [this.scratchText, this.initButton],
+      targets: [this.scratchResult, this.initButton],
       alpha: 1,
       scale: 1,
       ease: 'Bounce',
-      duration: 800
+      duration: 800,
+      onComplete: () => {
+        this.initButton.activeButton()
+      }
     })
   }
 

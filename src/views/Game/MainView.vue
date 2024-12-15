@@ -1,6 +1,6 @@
 <template>
   <header-component title="Game"></header-component>
-  <div class="game-window">
+  <div :class="isPc ? 'pc-game-window' : 'mobile-game-window'">
     <div id="game-container"></div>
   </div>
 
@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref, computed } from 'vue'
 import Phaser from 'phaser'
 import { EventBus } from '@/game/EventBus'
 import StartGame from '@/game/main'
@@ -45,12 +45,25 @@ defineExpose({ scene, game })
 function changeScene(sceneName: string) {
   scene.value.scene.start(sceneName)
 }
+
+const isPc = computed(() => {
+  return window.innerWidth >= 1024
+})
 </script>
 
 <style>
-.game-window {
+.pc-game-window {
   width: 100%;
   height: 80vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.mobile-game-window {
+  width: 100%;
+  height: 60vh;
   overflow: hidden;
   display: flex;
   justify-content: center;
