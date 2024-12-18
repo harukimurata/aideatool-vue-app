@@ -64,6 +64,7 @@ const isPc = computed(() => {
 .mobile-game-window {
   width: 100%;
   height: 60vh;
+  margin-top: 10%;
   overflow: hidden;
   display: flex;
   justify-content: center;
