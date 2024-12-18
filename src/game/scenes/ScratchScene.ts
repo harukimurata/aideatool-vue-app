@@ -85,9 +85,8 @@ export class ScratchScene extends Scene {
               alphaTopLeft: { value: 0, duration: 200, ease: 'Power1', delay: 100 },
               alphaBottomLeft: { value: 0, duration: 200, ease: 'Power1', delay: 100 }
             })
+            this.selectButtonBox[i].inactiveButton()
             this.openScratch(this.numberBox[i])
-          } else {
-            console.log('おせないよ')
           }
         }
       )
@@ -136,6 +135,7 @@ export class ScratchScene extends Scene {
         this.imageBox[boxNumber].setPosition(BASE_POS_X, BASE_POS_Y)
         this.imageBox[boxNumber].setTexture(this.slotNumberArray[this.numberBox[boxNumber]])
 
+        this.selectButtonBox[boxNumber].activeButton()
         this.selectButtonBox[boxNumber].setAlpha(1)
         this.selectButtonBox[boxNumber].setPosition(BASE_POS_X, BASE_POS_Y)
         boxNumber++
