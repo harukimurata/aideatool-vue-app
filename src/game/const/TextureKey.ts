@@ -1,4 +1,5 @@
 enum TextureKey {
+  HeightCheck = 'heightCheck',
   SlotBG = 'slot_bg',
   PushButton = 'pushButton',
   PushHoverButton = 'pushHoverButton',
@@ -27,7 +28,19 @@ enum TextureKey {
   SlotReplay = 'replay',
   DoubleUp = 'double_up',
   DoubleUpIconA = 'double_up_icon_a',
-  DoubleUpIconB = 'double_up_icon_b'
+  DoubleUpIconB = 'double_up_icon_b',
+  NengaBase = 'nenga_base',
+  NengaSnake = 'nenga_snake',
+  NengaHose = 'nenga_hose',
+  NengaSheep = 'nenga_sheep',
+  NengaMonkey = 'nenga_monkey',
+  NengaChicken = 'nenga_chicken',
+  NengaSilver = 'nenga_silver',
+  NengaRetry = 'nenga_retry',
+  NengaAtari_1 = 'nenga_atari_1',
+  NengaAtari_2 = 'nenga_atari_2',
+  NengaAtari_3 = 'nenga_atari_3',
+  NengaHazure = 'nenga_hazure'
 }
 
 export default TextureKey

@@ -1,71 +1,73 @@
 <template>
   <header-component title="Game"></header-component>
-  <PhaserGame ref="phaserRef" @current-active-scene="currentScene" />
-  <!-- <div>
-    <div>
-      <button class="button" @click="changeScene">Change Scene</button>
-    </div>
-    <div>
-      <button :disabled="canMoveSprite" class="button" @click="moveSprite">Toggle Movement</button>
-    </div>
-    <div class="spritePosition">
-      Sprite Position:
-      <pre>{{ spritePosition }}</pre>
-    </div>
-    <div>
-      <button class="button" @click="addSprite">Add New Sprite</button>
-    </div>
-  </div> -->
+  <div :class="isPc ? 'pc-game-window' : 'mobile-game-window'">
+    <div id="game-container"></div>
+  </div>
+
+  <div class="buttons is-centered mt-3">
+    <button class="button" @click="changeScene(SceneKey.SlotScene)">スロット</button>
+    <button class="button" @click="changeScene(SceneKey.ScratchScene)">スクラッチ</button>
+  </div>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
+import { onMounted, onUnmounted, ref, computed } from 'vue'
 import Phaser from 'phaser'
-import { ref, toRaw } from 'vue'
-import type { MainMenu } from '../../game/scenes/MainMenu'
-import PhaserGame from '../../game/PhaserGame.vue'
-const canMoveSprite = ref()
+import { EventBus } from '@/game/EventBus'
+import StartGame from '@/game/main'
+import SceneKey from '@/game/const/SceneKey'
 
-//  References to the PhaserGame component (game and scene are exposed)
-const phaserRef = ref()
-const spritePosition = ref({ x: 0, y: 0 })
+// Save the current scene instance
+const scene = ref()
+const game = ref()
 
-const changeScene = () => {
-  const scene = toRaw(phaserRef.value.scene) as MainMenu
+const emit = defineEmits(['current-active-scene'])
 
-  if (scene) {
-    //  Call the changeScene method defined in the `MainMenu`, `Game` and `GameOver` Scenes
-    scene.changeScene()
+onMounted(() => {
+  game.value = StartGame('game-container')
+
+  EventBus.on('current-scene-ready', (scene_instance: Phaser.Scene) => {
+    emit('current-active-scene', scene_instance)
+
+    scene.value = scene_instance
+  })
+})
+
+onUnmounted(() => {
+  if (game.value) {
+    game.value.destroy(true)
+    game.value = null
   }
+})
+
+defineExpose({ scene, game })
+
+function changeScene(sceneName: string) {
+  scene.value.scene.start(sceneName)
 }
 
-const addSprite = () => {
-  const scene = toRaw(phaserRef.value.scene) as Phaser.Scene
-
-  if (scene) {
-    // Add a new sprite to the current scene at a random position
-    const x = Phaser.Math.Between(64, scene.scale.width - 64)
-    const y = Phaser.Math.Between(64, scene.scale.height - 64)
-
-    // `add.sprite` is a Phaser GameObjectFactory method and it returns a Sprite Game Object instance
-    const star = scene.add.sprite(x, y, 'star')
-
-    //  ... which you can then act upon. Here we create a Phaser Tween to fade the star sprite in and out.
-    //  You could, of course, do this from within the Phaser Scene code, but this is just an example
-    //  showing that Phaser objects and systems can be acted upon from outside of Phaser itself.
-    scene.add.tween({
-      targets: star,
-      duration: 500 + Math.random() * 1000,
-      alpha: 0,
-      yoyo: true,
-      repeat: -1
-    })
-  }
-}
-
-// Event emitted from the PhaserGame component
-const currentScene = (scene: MainMenu) => {
-  canMoveSprite.value = scene.scene.key !== 'MainMenu'
-}
+const isPc = computed(() => {
+  return window.innerWidth >= 1024
+})
 </script>
 
-<style scoped></style>
+<style>
+.pc-game-window {
+  width: 100%;
+  height: 80vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.mobile-game-window {
+  width: 100%;
+  height: 60vh;
+  margin-top: 10%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+</style>

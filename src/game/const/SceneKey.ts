@@ -1,5 +1,6 @@
 enum SceneKey {
-  SlotScene = 'SlotScene'
+  SlotScene = 'SlotScene',
+  ScratchScene = 'ScratchScene'
 }
 
 export default SceneKey

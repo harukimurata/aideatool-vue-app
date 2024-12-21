@@ -31,7 +31,7 @@ export class Preloader extends Scene {
     //  Load the assets for the game - Replace with your own assets
     this.load.setPath('assets')
 
-    this.load.image('star', 'star.png')
+    this.load.image(TextureKey.HeightCheck, '/heightCheck.png')
     this.load.image(TextureKey.SlotBG, 'image/slot/slot_bg.png')
     this.load.image(TextureKey.SlotMachineOver, 'image/slot/slot_machine_over.png')
     this.load.image(TextureKey.SlotMachineUnder, 'image/slot/slot_machine_under.png')
@@ -59,6 +59,18 @@ export class Preloader extends Scene {
     this.load.image(TextureKey.DoubleUp, 'image/slot/number/double_up.png')
     this.load.image(TextureKey.DoubleUpIconA, 'image/slot/button/double_up_icon_a.png')
     this.load.image(TextureKey.DoubleUpIconB, 'image/slot/button/double_up_icon_b.png')
+    this.load.image(TextureKey.NengaBase, 'image/nenga2025/base.png')
+    this.load.image(TextureKey.NengaSnake, 'image/nenga2025/animal/snake.png')
+    this.load.image(TextureKey.NengaHose, 'image/nenga2025/animal/hose.png')
+    this.load.image(TextureKey.NengaSheep, 'image/nenga2025/animal/sheep.png')
+    this.load.image(TextureKey.NengaMonkey, 'image/nenga2025/animal/monkey.png')
+    this.load.image(TextureKey.NengaChicken, 'image/nenga2025/animal/chicken.png')
+    this.load.image(TextureKey.NengaSilver, 'image/nenga2025/silver.png')
+    this.load.image(TextureKey.NengaRetry, 'image/nenga2025/retry.png')
+    this.load.image(TextureKey.NengaAtari_1, 'image/nenga2025/atari/atari_sho_0.png')
+    this.load.image(TextureKey.NengaAtari_2, 'image/nenga2025/atari/atari_chu_0.png')
+    this.load.image(TextureKey.NengaAtari_3, 'image/nenga2025/atari/atari_dai_0.png')
+    this.load.image(TextureKey.NengaHazure, 'image/nenga2025/hazure.png')
   }
 
   create() {
@@ -66,6 +78,6 @@ export class Preloader extends Scene {
     //  For example, you can define global animations here, so we can use them in other scenes.
 
     //  Move to the MainMenu. You could also swap this for a Scene Transition, such as a camera fade.
-    this.scene.start(SceneKey.SlotScene)
+    this.scene.start(SceneKey.ScratchScene)
   }
 }
