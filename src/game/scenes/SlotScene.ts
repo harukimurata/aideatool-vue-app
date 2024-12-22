@@ -4,6 +4,7 @@ import { EventBus } from '../EventBus'
 import SceneKey from '../const/SceneKey'
 import TextureKey from '../const/TextureKey'
 import ImageButton from '../components/ImageButton'
+import SlotReelNumber from '../classes/SlotReelNumberClass'
 import { calcSlotHand } from '../utils'
 import { delayPromise } from '../helper'
 import { SPECIAL_HANDS } from '../const/SlotHand'
@@ -12,14 +13,12 @@ const MAX_SLOT_BET = 3
 const ADD_DOUBLE_UP_CHANCE = 11
 const COIN_NUM_POS_X = 450
 const COIN_NUM_POS_Y = 140
-
-enum REEL_NUMBER {
-  LEFT,
-  CENTER,
-  RIGHT
-}
+const SLOT_MACHINE_NUMBER_Y_POS = 86
 
 export class SlotScene extends Scene {
+  gameWidth!: number
+  gameHeight!: number
+
   background!: GameObjects.Image
   betNumText!: GameObjects.Text
   addCoinText!: GameObjects.Text
@@ -28,9 +27,10 @@ export class SlotScene extends Scene {
 
   slotMachineUnder!: GameObjects.Image
   slotMachineOver!: GameObjects.Image
-  slotMachineNumber1!: GameObjects.Image
-  slotMachineNumber2!: GameObjects.Image
-  slotMachineNumber3!: GameObjects.Image
+
+  slotReel1!: SlotReelNumber
+  slotReel2!: SlotReelNumber
+  slotReel3!: SlotReelNumber
 
   slotBetButton!: ImageButton
   slotStartButton!: ImageButton
@@ -46,29 +46,9 @@ export class SlotScene extends Scene {
   private isBet = false
   private addCoinNum = 0
   private coinNum = 1000
-  private saveStopNumber: number | null = null
-  private saveStopNumber1: number | null = null
-  private saveStopNumber2: number | null = null
-  private saveStopNumber3: number | null = null
   private isStartReel = false
-  private isStopNumber1 = false
-  private isStopNumber2 = false
-  private isStopNumber3 = false
   private doubleUpChanceCount = 0
   private isReplay = false
-
-  private slotNumberArray: string[] = [
-    TextureKey.SlotNumber0,
-    TextureKey.SlotNumber1,
-    TextureKey.SlotNumber2,
-    TextureKey.SlotNumber3,
-    TextureKey.SlotNumber4,
-    TextureKey.SlotNumber5,
-    TextureKey.SlotNumber6,
-    TextureKey.SlotNumber7,
-    TextureKey.SlotReplay,
-    TextureKey.DoubleUp
-  ]
 
   constructor() {
     super(SceneKey.SlotScene)
@@ -82,17 +62,39 @@ export class SlotScene extends Scene {
     const gameHeight = this.scale.height
     this.background = this.add.image(gameWidth / 2, gameHeight / 2, TextureKey.SlotBG)
     this.slotMachineUnder = this.add
-      .image(gameWidth / 2, gameHeight / 2 - 86, TextureKey.SlotMachineUnder)
+      .image(gameWidth / 2, gameHeight / 2 - SLOT_MACHINE_NUMBER_Y_POS, TextureKey.SlotMachineUnder)
       .setScale(1.15)
-    this.slotMachineNumber1 = this.add
-      .image(gameWidth / 2 - 170, gameHeight / 2 - 86, TextureKey.SlotNumber0)
-      .setScale(1.5)
-    this.slotMachineNumber2 = this.add
-      .image(gameWidth / 2, gameHeight / 2 - 86, TextureKey.SlotNumber0)
-      .setScale(1.5)
-    this.slotMachineNumber3 = this.add
-      .image(gameWidth / 2 + 175, gameHeight / 2 - 86, TextureKey.SlotNumber0)
-      .setScale(1.5)
+
+    this.slotReel1 = new SlotReelNumber(
+      this,
+      gameWidth / 2 - 170,
+      gameHeight / 2 - SLOT_MACHINE_NUMBER_Y_POS,
+      TextureKey.SlotNumber0,
+      gameWidth,
+      gameHeight
+    ).setScale(1.5)
+    this.add.existing(this.slotReel1)
+
+    this.slotReel2 = new SlotReelNumber(
+      this,
+      gameWidth / 2,
+      gameHeight / 2 - SLOT_MACHINE_NUMBER_Y_POS,
+      TextureKey.SlotNumber0,
+      gameWidth,
+      gameHeight
+    ).setScale(1.5)
+    this.add.existing(this.slotReel2)
+
+    this.slotReel3 = new SlotReelNumber(
+      this,
+      gameWidth / 2 + 175,
+      gameHeight / 2 - SLOT_MACHINE_NUMBER_Y_POS,
+      TextureKey.SlotNumber0,
+      gameWidth,
+      gameHeight
+    ).setScale(1.5)
+    this.add.existing(this.slotReel3)
+
     this.slotMachineOver = this.add
       .image(gameWidth / 2, gameHeight / 2, TextureKey.SlotMachineOver)
       .setScale(1.15)
@@ -188,8 +190,10 @@ export class SlotScene extends Scene {
       TextureKey.SlotButtonA,
       TextureKey.SlotButtonB,
       () => {
-        if (this.isStartReel && !this.isStopNumber1) {
-          this.stopReel(REEL_NUMBER.LEFT)
+        if (this.isStartReel && !this.slotReel1.getIsStop()) {
+          this.slotReel1.setIsStop(true)
+          this.slotResult()
+          this.slotReel1.stopAnimation(this)
         }
       }
     ).setScale(0.9)
@@ -202,8 +206,10 @@ export class SlotScene extends Scene {
       TextureKey.SlotButtonA,
       TextureKey.SlotButtonB,
       () => {
-        if (this.isStartReel && !this.isStopNumber2) {
-          this.stopReel(REEL_NUMBER.CENTER)
+        if (this.isStartReel && !this.slotReel2.getIsStop()) {
+          this.slotReel2.setIsStop(true)
+          this.slotResult()
+          this.slotReel2.stopAnimation(this)
         }
       }
     ).setScale(0.9)
@@ -216,8 +222,10 @@ export class SlotScene extends Scene {
       TextureKey.SlotButtonA,
       TextureKey.SlotButtonB,
       () => {
-        if (this.isStartReel && !this.isStopNumber3) {
-          this.stopReel(REEL_NUMBER.RIGHT)
+        if (this.isStartReel && !this.slotReel3.getIsStop()) {
+          this.slotReel3.setIsStop(true)
+          this.slotResult()
+          this.slotReel3.stopAnimation(this)
         }
       }
     ).setScale(0.9)
@@ -240,25 +248,9 @@ export class SlotScene extends Scene {
     }
 
     if (this.isStartReel) {
-      const slotNumber1 = Math.floor(Math.random() * 9) + 1
-      const slotNumber2 = Math.floor(Math.random() * 9) + 1
-      const slotNumber3 = Math.floor(Math.random() * 9) + 1
-
-      if (!this.isStopNumber1) {
-        const slotNumber = this.expectedValue(slotNumber1)
-        this.saveStopNumber1 = slotNumber
-        this.slotMachineNumber1.setTexture(this.slotNumberArray[slotNumber])
-      }
-      if (!this.isStopNumber2) {
-        const slotNumber = this.expectedValue(slotNumber2)
-        this.saveStopNumber2 = slotNumber
-        this.slotMachineNumber2.setTexture(this.slotNumberArray[slotNumber])
-      }
-      if (!this.isStopNumber3) {
-        const slotNumber = this.expectedValue(slotNumber3)
-        this.saveStopNumber3 = slotNumber
-        this.slotMachineNumber3.setTexture(this.slotNumberArray[slotNumber])
-      }
+      this.slotReel1.update()
+      this.slotReel2.update()
+      this.slotReel3.update()
     }
   }
 
@@ -293,51 +285,21 @@ export class SlotScene extends Scene {
   }
 
   /**
-   * リール回転停止
-   */
-  private stopReel(reelNumber: number) {
-    switch (reelNumber) {
-      case REEL_NUMBER.LEFT:
-        this.isStopNumber1 = true
-        this.slotResult(this.slotMachineNumber1)
-        break
-
-      case REEL_NUMBER.CENTER:
-        this.isStopNumber2 = true
-        this.slotResult(this.slotMachineNumber2)
-        break
-
-      case REEL_NUMBER.RIGHT:
-        this.isStopNumber3 = true
-        this.slotResult(this.slotMachineNumber3)
-        break
-    }
-  }
-
-  /**
    * スロット結果処理
    * @param object
    */
-  private slotResult(object: GameObjects.Image) {
-    this.stopAnimation(object)
-    if (this.isStopNumber1 && this.isStopNumber2 && this.isStopNumber3) {
-      if (
-        this.saveStopNumber1 &&
-        this.saveStopNumber2 &&
-        this.saveStopNumber3 &&
-        this.saveStopNumber
-      ) {
-        const addCoin = calcSlotHand(
-          this.saveStopNumber1,
-          this.saveStopNumber2,
-          this.saveStopNumber3
-        )
-        if (addCoin > 0) {
-          this.calcSpecialHands(addCoin)
-        }
+  private slotResult() {
+    if (this.slotReel1.getIsStop() && this.slotReel2.getIsStop() && this.slotReel3.getIsStop()) {
+      const addCoin = calcSlotHand(
+        this.slotReel1.getStopNumber(),
+        this.slotReel2.getStopNumber(),
+        this.slotReel3.getStopNumber()
+      )
+      if (addCoin > 0) {
+        this.calcSpecialHands(addCoin)
       }
+      this.initSlot()
     }
-    this.initSlot()
   }
 
   /**
@@ -374,25 +336,6 @@ export class SlotScene extends Scene {
         this.addCoinAnimation(newCoinNum)
         break
     }
-  }
-
-  /**
-   * ストップアニメーション
-   * @param object
-   */
-  private stopAnimation(object: GameObjects.Image) {
-    this.tweens.add({
-      targets: object,
-      scale: 1.8,
-      duration: 100,
-      onComplete: () => {
-        this.tweens.add({
-          targets: object,
-          scale: 1.5,
-          duration: 100
-        })
-      }
-    })
   }
 
   /**
@@ -442,7 +385,7 @@ export class SlotScene extends Scene {
    * スロット初期化
    */
   private initSlot() {
-    if (this.isStopNumber1 && this.isStopNumber2 && this.isStopNumber3) {
+    if (this.slotReel1.getIsStop() && this.slotReel2.getIsStop() && this.slotReel3.getIsStop()) {
       this.time.delayedCall(500, () => {
         if (!this.isReplay) {
           this.slotChargeButton1.setTexture(TextureKey.SlotButtonC)
@@ -454,14 +397,10 @@ export class SlotScene extends Scene {
           this.betNumText.setText('Bet: ' + this.betCount)
         }
 
-        this.isStopNumber1 = false
-        this.isStopNumber2 = false
-        this.isStopNumber3 = false
+        this.slotReel1.init(this)
+        this.slotReel2.init(this)
+        this.slotReel3.init(this)
         this.isStartReel = false
-        this.saveStopNumber = null
-        this.saveStopNumber1 = null
-        this.saveStopNumber2 = null
-        this.saveStopNumber3 = null
 
         this.doubleUpChanceCount = this.doubleUpChanceCount - 1
         if (this.doubleUpChanceCount < 0) {
@@ -472,27 +411,5 @@ export class SlotScene extends Scene {
         }
       })
     }
-  }
-
-  /**
-   * ベット量に合わせた期待値の操作
-   * @param saveNumber
-   * @returns
-   */
-  private expectedValue(saveNumber: number): number {
-    if (this.saveStopNumber == null) {
-      this.saveStopNumber = saveNumber
-    }
-
-    if (this.betCount == 2) {
-      if (Math.floor(Math.random() * 3) === 0) {
-        return this.saveStopNumber
-      }
-    } else if (this.betCount == 3) {
-      if (Math.floor(Math.random() * 2) === 0) {
-        return this.saveStopNumber
-      }
-    }
-    return saveNumber
   }
 }
