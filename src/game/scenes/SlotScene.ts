@@ -4,7 +4,7 @@ import { EventBus } from '../EventBus'
 import SceneKey from '../const/SceneKey'
 import TextureKey from '../const/TextureKey'
 import ImageButton from '../components/ImageButton'
-import SlotReelNumber from '../classes/SlotReelNumberClass'
+import SlotReelNumber from '../components/SlotReelNumber'
 import { calcSlotHand } from '../utils'
 import { delayPromise } from '../helper'
 import { SPECIAL_HANDS } from '../const/SlotHand'
@@ -37,9 +37,9 @@ export class SlotScene extends Scene {
   slotStopButton1!: ImageButton
   slotStopButton2!: ImageButton
   slotStopButton3!: ImageButton
-  slotChargeButton1!: GameObjects.Image
-  slotChargeButton2!: GameObjects.Image
-  slotChargeButton3!: GameObjects.Image
+  betLamp1!: GameObjects.Image
+  betLamp2!: GameObjects.Image
+  betLamp3!: GameObjects.Image
   doubleChanceIcon!: GameObjects.Image
 
   private betCount = 0
@@ -98,15 +98,9 @@ export class SlotScene extends Scene {
     this.slotMachineOver = this.add
       .image(gameWidth / 2, gameHeight / 2, TextureKey.SlotMachineOver)
       .setScale(1.15)
-    this.slotChargeButton1 = this.add
-      .image(gameWidth / 2 - 170, 190, TextureKey.SlotButtonC)
-      .setScale(0.6)
-    this.slotChargeButton2 = this.add
-      .image(gameWidth / 2, 190, TextureKey.SlotButtonC)
-      .setScale(0.6)
-    this.slotChargeButton3 = this.add
-      .image(gameWidth / 2 + 170, 190, TextureKey.SlotButtonC)
-      .setScale(0.6)
+    this.betLamp1 = this.add.image(gameWidth / 2 - 170, 190, TextureKey.SlotButtonC).setScale(0.6)
+    this.betLamp2 = this.add.image(gameWidth / 2, 190, TextureKey.SlotButtonC).setScale(0.6)
+    this.betLamp3 = this.add.image(gameWidth / 2 + 170, 190, TextureKey.SlotButtonC).setScale(0.6)
 
     this.doubleChanceIcon = this.add.image(465, 90, TextureKey.DoubleUpIconA).setScale(0.8)
 
@@ -232,6 +226,10 @@ export class SlotScene extends Scene {
     this.add.existing(this.slotStopButton3)
 
     EventBus.emit('current-scene-ready', this)
+
+    this.slotReel1.init(this)
+    this.slotReel2.init(this)
+    this.slotReel3.init(this)
   }
 
   /**
@@ -265,11 +263,11 @@ export class SlotScene extends Scene {
       this.coinNumText.setText('COIN: ' + this.coinNum)
 
       if (this.betCount == 1) {
-        this.slotChargeButton1.setTexture(TextureKey.SlotButtonD)
+        this.betLamp1.setTexture(TextureKey.SlotButtonD)
       } else if (this.betCount == 2) {
-        this.slotChargeButton2.setTexture(TextureKey.SlotButtonD)
+        this.betLamp2.setTexture(TextureKey.SlotButtonD)
       } else if (this.betCount == 3) {
-        this.slotChargeButton3.setTexture(TextureKey.SlotButtonD)
+        this.betLamp3.setTexture(TextureKey.SlotButtonD)
       }
     }
   }
@@ -313,9 +311,9 @@ export class SlotScene extends Scene {
         this.isReplay = true
         this.betCount = 3
         this.betNumText.setText('Bet: ' + this.betCount * 2)
-        this.slotChargeButton1.setTexture(TextureKey.SlotButtonD)
-        this.slotChargeButton2.setTexture(TextureKey.SlotButtonD)
-        this.slotChargeButton3.setTexture(TextureKey.SlotButtonD)
+        this.betLamp1.setTexture(TextureKey.SlotButtonD)
+        this.betLamp2.setTexture(TextureKey.SlotButtonD)
+        this.betLamp3.setTexture(TextureKey.SlotButtonD)
         break
 
       case SPECIAL_HANDS.DOUBLE_UP:
@@ -388,9 +386,9 @@ export class SlotScene extends Scene {
     if (this.slotReel1.getIsStop() && this.slotReel2.getIsStop() && this.slotReel3.getIsStop()) {
       this.time.delayedCall(500, () => {
         if (!this.isReplay) {
-          this.slotChargeButton1.setTexture(TextureKey.SlotButtonC)
-          this.slotChargeButton2.setTexture(TextureKey.SlotButtonC)
-          this.slotChargeButton3.setTexture(TextureKey.SlotButtonC)
+          this.betLamp1.setTexture(TextureKey.SlotButtonC)
+          this.betLamp2.setTexture(TextureKey.SlotButtonC)
+          this.betLamp3.setTexture(TextureKey.SlotButtonC)
           this.betCount = 0
           this.isBet = false
           this.addCoinNum = 0
