@@ -1,23 +1,13 @@
-import { slotHands } from './const/SlotHand'
-
 /**
- * slotの役を返す
+ * 数字の合計が偶数か奇数かbooleanで返す
+ * trueが偶数、falseが奇数
  * @param number1
  * @param number2
  * @param number3
  * @returns
  */
-export function calcSlotHand(number1: number, number2: number, number3: number): number {
-  let addCoin = 0
-  for (let i = 0; i < slotHands.length; i++) {
-    if (
-      slotHands[i].Number1 == number1 &&
-      slotHands[i].Number2 == number2 &&
-      slotHands[i].Number3 == number3
-    ) {
-      addCoin = slotHands[i].value
-    }
-  }
-
-  return addCoin
+export function isEvenNumber(number1: number, number2: number, number3: number): boolean {
+  console.log(number1 + number2 + number3)
+  const num = number1 + number2 + number3
+  return num % 2 == 0
 }

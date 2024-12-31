@@ -66,7 +66,6 @@ export default class SlotReelNumber extends Phaser.GameObjects.Image {
         }
 
         this.setStopNumber(this.imageCount)
-        this.setTexture(this.slotNumberArray[this.imageCount])
       }
     } else {
       this.setY(this.gameHeight / 2 - SLOT_MACHINE_NUMBER_Y_POS)
@@ -113,6 +112,7 @@ export default class SlotReelNumber extends Phaser.GameObjects.Image {
    */
   public setStopNumber(value: number) {
     this.stopNumber = value
+    this.setTexture(this.slotNumberArray[value])
   }
 
   /**

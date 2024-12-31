@@ -6,15 +6,19 @@ import TextureKey from '../const/TextureKey'
 import ImageButton from '../components/ImageButton'
 import SlotReelNumber from '../components/SlotReelNumber'
 import ImageManager from '../components/ImageManager'
-import { calcSlotHand, isEvenNumber } from '../utils'
+import { calcSlotHand } from '../logic/slot'
+import { isEvenNumber } from '../utils'
 import { delayPromise } from '../helper'
 import { SPECIAL_HANDS } from '../const/SlotHand'
 
 const MAX_SLOT_BET = 3
+const MAX_BONUS_STAR = 5
+const BONUS_STAR_POS_X = 100
+const BONUS_STAR_POS_X_SPACE = 50
 const ADD_DOUBLE_UP_CHANCE = 11
 const COIN_NUM_POS_X = 450
-const COIN_NUM_POS_Y = 140
-const SLOT_MACHINE_NUMBER_Y_POS = 86
+const COIN_NUM_POS_Y = 135
+const SLOT_MACHINE_NUMBER_Y_POS = 85
 
 export class SlotScene extends Scene {
   gameWidth!: number
@@ -39,9 +43,12 @@ export class SlotScene extends Scene {
   slotStopButton1!: ImageButton
   slotStopButton2!: ImageButton
   slotStopButton3!: ImageButton
+
   betLamp1!: ImageManager
   betLamp2!: ImageManager
   betLamp3!: ImageManager
+
+  bonusStars: ImageManager[] = []
 
   private betCount = 0
   private isBet = false
@@ -49,6 +56,8 @@ export class SlotScene extends Scene {
   private coinNum = 1000
   private isStartReel = false
   private doubleUpChanceCount = 0
+  private isChargeMax = false
+  private chargeStarCount = 0
   private isReplay = false
 
   constructor() {
@@ -63,8 +72,8 @@ export class SlotScene extends Scene {
     const gameHeight = this.scale.height
     this.background = this.add.image(gameWidth / 2, gameHeight / 2, TextureKey.SlotBG)
     this.slotMachineUnder = this.add
-      .image(gameWidth / 2, gameHeight / 2 - SLOT_MACHINE_NUMBER_Y_POS, TextureKey.SlotMachineUnder)
-      .setScale(1.15)
+      .image(gameWidth / 2, gameHeight / 2, TextureKey.SlotMachineUnder)
+      .setScale(1.2)
 
     this.slotReel1 = new SlotReelNumber(
       this,
@@ -88,7 +97,7 @@ export class SlotScene extends Scene {
 
     this.slotReel3 = new SlotReelNumber(
       this,
-      gameWidth / 2 + 175,
+      gameWidth / 2 + 170,
       gameHeight / 2 - SLOT_MACHINE_NUMBER_Y_POS,
       TextureKey.SlotNumber0,
       gameWidth,
@@ -98,12 +107,12 @@ export class SlotScene extends Scene {
 
     this.slotMachineOver = this.add
       .image(gameWidth / 2, gameHeight / 2, TextureKey.SlotMachineOver)
-      .setScale(1.15)
+      .setScale(1.2)
 
     this.betLamp1 = new ImageManager(
       this,
       gameWidth / 2 - 170,
-      190,
+      180,
       [TextureKey.SlotButtonC, TextureKey.SlotButtonD],
       0.6
     )
@@ -112,7 +121,7 @@ export class SlotScene extends Scene {
     this.betLamp2 = new ImageManager(
       this,
       gameWidth / 2,
-      190,
+      180,
       [TextureKey.SlotButtonC, TextureKey.SlotButtonD],
       0.6
     )
@@ -121,16 +130,27 @@ export class SlotScene extends Scene {
     this.betLamp3 = new ImageManager(
       this,
       gameWidth / 2 + 170,
-      190,
+      180,
       [TextureKey.SlotButtonC, TextureKey.SlotButtonD],
       0.6
     )
     this.add.existing(this.betLamp3)
 
-    this.doubleChanceIcon = this.add.image(80, 90, TextureKey.DoubleUpIconA).setScale(0.8)
+    for (let i = 0; i < MAX_BONUS_STAR; i++) {
+      this.bonusStars[i] = new ImageManager(
+        this,
+        gameWidth / 2 - BONUS_STAR_POS_X + BONUS_STAR_POS_X_SPACE * i,
+        80,
+        [TextureKey.SlotStarB, TextureKey.SlotStarA, TextureKey.SlotStarC],
+        0.7
+      )
+      this.add.existing(this.bonusStars[i])
+    }
+
+    this.doubleChanceIcon = this.add.image(80, 80, TextureKey.DoubleUpIconA).setScale(0.8)
 
     this.betNumText = this.add
-      .text(100, 140, 'Bet: ' + this.betCount, {
+      .text(100, 135, 'Bet: ' + this.betCount, {
         fontFamily: 'Arial Black',
         fontSize: 28,
         color: '#ffffff',
@@ -141,7 +161,7 @@ export class SlotScene extends Scene {
       .setDepth(100)
 
     this.addCoinText = this.add
-      .text(400, 85, '+ ' + this.addCoinNum, {
+      .text(500, 85, '+ ' + this.addCoinNum, {
         fontFamily: 'Cambria',
         fontSize: 38,
         color: '#ff0000',
@@ -153,7 +173,7 @@ export class SlotScene extends Scene {
       .setAlpha(0)
 
     this.doubleUpChanceNumText = this.add
-      .text(125, 100, '× ' + this.doubleUpChanceCount, {
+      .text(125, 90, '× ' + this.doubleUpChanceCount, {
         fontFamily: 'Cambria',
         fontSize: 30,
         color: '#ffffff',
@@ -211,6 +231,11 @@ export class SlotScene extends Scene {
       () => {
         if (this.isStartReel && !this.slotReel1.getIsStop()) {
           this.slotReel1.setIsStop(true)
+
+          if (this.isChargeMax) {
+            this.slotReel1.setStopNumber(7)
+          }
+
           this.slotResult()
           this.slotReel1.stopAnimation(this)
         }
@@ -227,6 +252,10 @@ export class SlotScene extends Scene {
       () => {
         if (this.isStartReel && !this.slotReel2.getIsStop()) {
           this.slotReel2.setIsStop(true)
+
+          if (this.isChargeMax) {
+            this.slotReel2.setStopNumber(7)
+          }
           this.slotResult()
           this.slotReel2.stopAnimation(this)
         }
@@ -243,6 +272,9 @@ export class SlotScene extends Scene {
       () => {
         if (this.isStartReel && !this.slotReel3.getIsStop()) {
           this.slotReel3.setIsStop(true)
+          if (this.isChargeMax) {
+            this.slotReel3.setStopNumber(7)
+          }
           this.slotResult()
           this.slotReel3.stopAnimation(this)
         }
@@ -288,11 +320,11 @@ export class SlotScene extends Scene {
       this.coinNumText.setText('COIN: ' + this.coinNum)
 
       if (this.betCount == 1) {
-        this.betLamp1.setImage(1)
+        this.betLamp1.addCount()
       } else if (this.betCount == 2) {
-        this.betLamp2.setImage(1)
+        this.betLamp2.addCount()
       } else if (this.betCount == 3) {
-        this.betLamp3.setImage(1)
+        this.betLamp3.addCount()
       }
     }
   }
@@ -313,6 +345,12 @@ export class SlotScene extends Scene {
    */
   private slotResult() {
     if (this.slotReel1.getIsStop() && this.slotReel2.getIsStop() && this.slotReel3.getIsStop()) {
+      if (this.isChargeMax) {
+        this.starChargeCountDowner()
+      } else {
+        this.starCharger()
+      }
+      this.starImageManager()
       const addCoin = calcSlotHand(
         this.slotReel1.getStopNumber(),
         this.slotReel2.getStopNumber(),
@@ -402,6 +440,54 @@ export class SlotScene extends Scene {
       this.coinNumText.setText('COIN: ' + oldValue)
     }
     this.coinNum = newCoin
+  }
+
+  private starCharger() {
+    if (
+      isEvenNumber(
+        this.slotReel1.getStopNumber(),
+        this.slotReel2.getStopNumber(),
+        this.slotReel3.getStopNumber()
+      )
+    ) {
+      this.chargeStarCount++
+      if (this.chargeStarCount > MAX_BONUS_STAR) {
+        this.chargeStarCount = 5
+        this.isChargeMax = true
+      }
+    } else {
+      this.chargeStarCount--
+      if (this.chargeStarCount < 0) {
+        this.chargeStarCount = 0
+      }
+    }
+  }
+
+  private starChargeCountDowner() {
+    this.chargeStarCount--
+    if (this.chargeStarCount == 0) {
+      this.isChargeMax = false
+    }
+  }
+
+  private starImageManager() {
+    if (this.isChargeMax) {
+      for (let i = 0; i < MAX_BONUS_STAR; i++) {
+        if (i < this.chargeStarCount) {
+          this.bonusStars[i].setImage(2)
+        } else {
+          this.bonusStars[i].setImage(0)
+        }
+      }
+    } else {
+      for (let i = 0; i < MAX_BONUS_STAR; i++) {
+        if (i < this.chargeStarCount) {
+          this.bonusStars[i].setImage(1)
+        } else {
+          this.bonusStars[i].setImage(0)
+        }
+      }
+    }
   }
 
   /**
