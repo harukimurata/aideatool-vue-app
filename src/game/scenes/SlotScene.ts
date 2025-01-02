@@ -20,8 +20,8 @@ const SLOT_REEL_POS_X_SPACE = 170
 const STOP_BUTTON_POS_X = 120
 const STOP_BUTTON_POS_X_SPACE = 120
 const STOP_BUTTON_POS_Y = 70
-const BONUS_STAR_POS_X = 100
-const BONUS_STAR_POS_X_SPACE = 50
+const BONUS_POS_X = 100
+const BONUS_POS_X_SPACE = 50
 const BET_LUMP_POS_X = 170
 const BET_LUMP_POS_X_SPACE = 170
 const ADD_DOUBLE_UP_CHANCE = 11
@@ -46,16 +46,11 @@ export class SlotScene extends Scene {
   slotBetButton!: ImageButton
   slotStartButton!: ImageButton
 
-  slotReels: SlotReelNumber[] = []
-
-  slotStopButtons: ImageButton[] = []
-
-  slotStopButton1!: ImageButton
-  slotStopButton2!: ImageButton
-  slotStopButton3!: ImageButton
-
-  betLamps: ImageManager[] = []
   bonusStars: ImageManager[] = []
+  betLamps: ImageManager[] = []
+
+  slotReels: SlotReelNumber[] = []
+  slotStopButtons: ImageButton[] = []
 
   private betCount = 0
   private isBet = false
@@ -63,8 +58,8 @@ export class SlotScene extends Scene {
   private coinNum = 1000
   private isStartReel = false
   private doubleUpChanceCount = 0
-  private isChargeMax = false
-  private chargeStarCount = 0
+  private isBonusMax = false
+  private bonusCount = 0
   private isReplay = false
 
   constructor() {
@@ -112,7 +107,7 @@ export class SlotScene extends Scene {
     for (let i = 0; i < MAX_BONUS_STAR; i++) {
       this.bonusStars[i] = new ImageManager(
         this,
-        gameWidth / 2 - BONUS_STAR_POS_X + BONUS_STAR_POS_X_SPACE * i,
+        gameWidth / 2 - BONUS_POS_X + BONUS_POS_X_SPACE * i,
         80,
         [TextureKey.SlotStarB, TextureKey.SlotStarA, TextureKey.SlotStarC],
         0.7
@@ -206,7 +201,7 @@ export class SlotScene extends Scene {
           if (this.isStartReel && !this.slotReels[i].getIsStop()) {
             this.slotReels[i].setIsStop(true)
 
-            if (this.isChargeMax) {
+            if (this.isBonusMax) {
               this.slotReels[i].setStopNumber(7)
             }
 
@@ -285,12 +280,12 @@ export class SlotScene extends Scene {
       this.slotReels[1].getIsStop() &&
       this.slotReels[2].getIsStop()
     ) {
-      if (this.isChargeMax) {
-        this.starChargeCountDowner()
+      if (this.isBonusMax) {
+        this.bonusModeCountDowner()
       } else {
-        this.starCharger()
+        this.bonusCharger()
       }
-      this.starImageManager()
+      this.bonusImageManager()
       const addCoin = calcSlotHand(
         this.slotReels[0].getStopNumber(),
         this.slotReels[1].getStopNumber(),
@@ -382,7 +377,10 @@ export class SlotScene extends Scene {
     this.coinNum = newCoin
   }
 
-  private starCharger() {
+  /**
+   * ボーナスのチャージ処理
+   */
+  private bonusCharger() {
     if (
       isEvenNumber(
         this.slotReels[0].getStopNumber(),
@@ -390,30 +388,36 @@ export class SlotScene extends Scene {
         this.slotReels[2].getStopNumber()
       )
     ) {
-      this.chargeStarCount++
-      if (this.chargeStarCount > MAX_BONUS_STAR) {
-        this.chargeStarCount = 5
-        this.isChargeMax = true
+      this.bonusCount++
+      if (this.bonusCount > MAX_BONUS_STAR) {
+        this.bonusCount = 5
+        this.isBonusMax = true
       }
     } else {
-      this.chargeStarCount--
-      if (this.chargeStarCount < 0) {
-        this.chargeStarCount = 0
+      this.bonusCount--
+      if (this.bonusCount < 0) {
+        this.bonusCount = 0
       }
     }
   }
 
-  private starChargeCountDowner() {
-    this.chargeStarCount--
-    if (this.chargeStarCount == 0) {
-      this.isChargeMax = false
+  /**
+   * ボーナスモードのカウント処理
+   */
+  private bonusModeCountDowner() {
+    this.bonusCount--
+    if (this.bonusCount == 0) {
+      this.isBonusMax = false
     }
   }
 
-  private starImageManager() {
-    if (this.isChargeMax) {
+  /**
+   * ボーナスの画像更新処理
+   */
+  private bonusImageManager() {
+    if (this.isBonusMax) {
       for (let i = 0; i < MAX_BONUS_STAR; i++) {
-        if (i < this.chargeStarCount) {
+        if (i < this.bonusCount) {
           this.bonusStars[i].setImage(2)
         } else {
           this.bonusStars[i].setImage(0)
@@ -421,7 +425,7 @@ export class SlotScene extends Scene {
       }
     } else {
       for (let i = 0; i < MAX_BONUS_STAR; i++) {
-        if (i < this.chargeStarCount) {
+        if (i < this.bonusCount) {
           this.bonusStars[i].setImage(1)
         } else {
           this.bonusStars[i].setImage(0)
