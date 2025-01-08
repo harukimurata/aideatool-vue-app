@@ -223,7 +223,7 @@ export class SlotScene extends Scene {
   /**
    * ゲームループ
    */
-  update() {
+  update(time: number, delta: number) {
     if (!this.isBet) {
       if (this.betCount < 1) {
         this.slotStartButton.setTexture(TextureKey.SlotStartB)
@@ -234,9 +234,9 @@ export class SlotScene extends Scene {
     }
 
     if (this.isStartReel) {
-      this.slotReels[0].update()
-      this.slotReels[1].update()
-      this.slotReels[2].update()
+      this.slotReels[0].update(delta)
+      this.slotReels[1].update(delta)
+      this.slotReels[2].update(delta)
     }
   }
 
@@ -263,11 +263,14 @@ export class SlotScene extends Scene {
   /**
    * リール回転開始
    */
-  private startReel() {
-    this.isStartReel = true
-    if (this.isReplay) {
-      this.isReplay = false
+  private async startReel() {
+    for (let i = 0; i < SLOT_REEL_NUM; i++) {
+      this.slotReels[i].init(this)
     }
+
+    await delayPromise(this, 300)
+    this.isStartReel = true
+    this.isReplay = false
   }
 
   /**
@@ -454,9 +457,6 @@ export class SlotScene extends Scene {
           this.betNumText.setText('Bet: ' + this.betCount)
         }
 
-        for (let i = 0; i < SLOT_REEL_NUM; i++) {
-          this.slotReels[i].init(this)
-        }
         this.isStartReel = false
 
         this.doubleUpChanceCount = this.doubleUpChanceCount - 1

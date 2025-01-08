@@ -4,7 +4,7 @@ const START_REEL_POS_Y = 200
 const END_REEL_POS_Y = 370
 const SLOT_MACHINE_NUMBER_Y_POS = 86
 //回転スピード
-const REEL_SPEED = 7
+const REEL_SPEED = 700
 
 export default class SlotReelNumber extends Phaser.GameObjects.Image {
   private slotNumberArray: string[] = [
@@ -53,9 +53,9 @@ export default class SlotReelNumber extends Phaser.GameObjects.Image {
   /**
    * 更新処理
    */
-  public update() {
+  public update(delta: number) {
     if (!this.isStop) {
-      this.setY((this.y += REEL_SPEED))
+      this.setY((this.y += REEL_SPEED * (delta / 1000)))
 
       if (this.y >= END_REEL_POS_Y) {
         this.setY(START_REEL_POS_Y)
