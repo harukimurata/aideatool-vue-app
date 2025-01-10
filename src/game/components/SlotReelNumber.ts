@@ -6,18 +6,53 @@ const SLOT_MACHINE_NUMBER_Y_POS = 86
 //回転スピード
 const REEL_SPEED = 700
 
+export interface SlotReel {
+  textureName: string
+  value: number
+}
+
 export default class SlotReelNumber extends Phaser.GameObjects.Image {
-  private slotNumberArray: string[] = [
-    TextureKey.SlotNumber0,
-    TextureKey.SlotNumber1,
-    TextureKey.SlotNumber2,
-    TextureKey.SlotNumber3,
-    TextureKey.SlotNumber4,
-    TextureKey.SlotNumber5,
-    TextureKey.SlotNumber6,
-    TextureKey.SlotNumber7,
-    TextureKey.SlotReplay,
-    TextureKey.DoubleUp
+  private slotNumberArray: SlotReel[] = [
+    {
+      textureName: TextureKey.SlotNumber0,
+      value: 0
+    },
+    {
+      textureName: TextureKey.SlotNumber1,
+      value: 1
+    },
+    {
+      textureName: TextureKey.SlotNumber2,
+      value: 2
+    },
+    {
+      textureName: TextureKey.SlotNumber3,
+      value: 3
+    },
+    {
+      textureName: TextureKey.SlotNumber4,
+      value: 4
+    },
+    {
+      textureName: TextureKey.SlotNumber5,
+      value: 5
+    },
+    {
+      textureName: TextureKey.SlotNumber6,
+      value: 6
+    },
+    {
+      textureName: TextureKey.SlotNumber7,
+      value: 7
+    },
+    {
+      textureName: TextureKey.SlotReplay,
+      value: 8
+    },
+    {
+      textureName: TextureKey.DoubleUp,
+      value: 9
+    }
   ]
 
   private gameWidth!: number
@@ -65,7 +100,7 @@ export default class SlotReelNumber extends Phaser.GameObjects.Image {
           this.imageCount = 1
         }
 
-        this.setStopNumber(this.imageCount)
+        this.setReelNumber(this.imageCount)
       }
     } else {
       this.setY(this.gameHeight / 2 - SLOT_MACHINE_NUMBER_Y_POS)
@@ -97,7 +132,7 @@ export default class SlotReelNumber extends Phaser.GameObjects.Image {
    */
   public initAnimation(scene: Phaser.Scene) {
     this.imageCount = Math.floor(Math.random() * (this.imageCountMax - 1)) + 1
-    this.setTexture(this.slotNumberArray[this.imageCount])
+    this.setTexture(this.slotNumberArray[this.imageCount].textureName)
     scene.tweens.add({
       targets: this,
       rotation: 2 * Math.PI,
@@ -107,12 +142,12 @@ export default class SlotReelNumber extends Phaser.GameObjects.Image {
   }
 
   /**
-   * 止めた時の番号をセット
+   * リールの画像と値セット
    * @param value
    */
-  public setStopNumber(value: number) {
-    this.stopNumber = value
-    this.setTexture(this.slotNumberArray[value])
+  public setReelNumber(value: number) {
+    this.setTexture(this.slotNumberArray[value].textureName)
+    this.stopNumber = this.slotNumberArray[value].value
   }
 
   /**
