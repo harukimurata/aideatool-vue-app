@@ -7,7 +7,6 @@
  * @returns
  */
 export function isEvenNumber(number1: number, number2: number, number3: number): boolean {
-  console.log(number1 + number2 + number3)
   const num = number1 + number2 + number3
   return num % 2 == 0
 }
