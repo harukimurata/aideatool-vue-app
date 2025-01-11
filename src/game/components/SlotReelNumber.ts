@@ -1,5 +1,7 @@
 import TextureKey from '../const/TextureKey'
+import { shuffleArray } from '../helper'
 
+const BONUS_NUMBER = 7
 const START_REEL_POS_Y = 200
 const END_REEL_POS_Y = 370
 const SLOT_MACHINE_NUMBER_Y_POS = 86
@@ -13,10 +15,6 @@ export interface SlotReel {
 
 export default class SlotReelNumber extends Phaser.GameObjects.Image {
   private slotNumberArray: SlotReel[] = [
-    {
-      textureName: TextureKey.SlotNumber0,
-      value: 0
-    },
     {
       textureName: TextureKey.SlotNumber1,
       value: 1
@@ -97,7 +95,7 @@ export default class SlotReelNumber extends Phaser.GameObjects.Image {
 
         this.imageCount++
         if (this.imageCount >= this.imageCountMax) {
-          this.imageCount = 1
+          this.imageCount = 0
         }
 
         this.setReelNumber(this.imageCount)
@@ -132,6 +130,7 @@ export default class SlotReelNumber extends Phaser.GameObjects.Image {
    */
   public initAnimation(scene: Phaser.Scene) {
     this.imageCount = Math.floor(Math.random() * (this.imageCountMax - 1)) + 1
+    this.slotNumberArray = shuffleArray(this.slotNumberArray)
     this.setTexture(this.slotNumberArray[this.imageCount].textureName)
     scene.tweens.add({
       targets: this,
@@ -148,6 +147,14 @@ export default class SlotReelNumber extends Phaser.GameObjects.Image {
   public setReelNumber(value: number) {
     this.setTexture(this.slotNumberArray[value].textureName)
     this.stopNumber = this.slotNumberArray[value].value
+  }
+
+  /**
+   * ボーナス時にセットする値
+   */
+  public setBonusNumber() {
+    this.setTexture(TextureKey.SlotNumber7)
+    this.stopNumber = BONUS_NUMBER
   }
 
   /**

@@ -202,7 +202,7 @@ export class SlotScene extends Scene {
             this.slotReels[i].setIsStop(true)
 
             if (this.isBonusMax) {
-              this.slotReels[i].setReelNumber(7)
+              this.slotReels[i].setBonusNumber()
             }
 
             this.slotResult()
