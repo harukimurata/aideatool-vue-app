@@ -184,6 +184,7 @@ export class SlotScene extends Scene {
       TextureKey.SlotStartB,
       () => {
         if (!this.isStartReel && this.betCount >= 1) {
+          this.slotStartButton.inactiveButton()
           this.startReel()
         }
       }
@@ -372,12 +373,19 @@ export class SlotScene extends Scene {
         this.coinNumText.setPosition(COIN_NUM_POS_X, COIN_NUM_POS_Y)
       }
     })
-    while (oldValue !== newCoin) {
-      oldValue = oldValue + addValue
-      await delayPromise(this, duration)
-      this.coinNumText.setText('COIN: ' + oldValue)
-    }
     this.coinNum = newCoin
+    let addCoinNum = 0
+    while (oldValue !== newCoin) {
+      addCoinNum += addValue
+      if (addCoinNum < 50) {
+        oldValue = oldValue + addValue
+        await delayPromise(this, duration)
+        this.coinNumText.setText('COIN: ' + oldValue)
+      } else {
+        this.coinNumText.setText('COIN: ' + this.coinNum)
+        break
+      }
+    }
   }
 
   /**
@@ -457,6 +465,7 @@ export class SlotScene extends Scene {
           this.betNumText.setText('Bet: ' + this.betCount)
         }
 
+        this.slotStartButton.activeButton()
         this.isStartReel = false
 
         this.doubleUpChanceCount = this.doubleUpChanceCount - 1
