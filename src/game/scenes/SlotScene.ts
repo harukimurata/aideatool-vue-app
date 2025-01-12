@@ -20,13 +20,20 @@ const SLOT_REEL_POS_X_SPACE = 170
 const STOP_BUTTON_POS_X = 120
 const STOP_BUTTON_POS_X_SPACE = 120
 const STOP_BUTTON_POS_Y = 70
+const DOUBLE_UP_ICON_POS_X = 270
+const DOUBLE_UP_ICON_POS_Y = 168
+const DOUBLE_UP_TEXT_POS_X = 315
+const DOUBLE_UP_TEXT_POS_Y = 178
 const BONUS_POS_X = 100
 const BONUS_POS_X_SPACE = 50
-const BET_LUMP_POS_X = 170
-const BET_LUMP_POS_X_SPACE = 170
+const BET_NUM_TEXT_POS_X = 165
+const BET_NUM_TEXT_POS_Y = 175
+const BET_LUMP_POS_X = 80
+const BET_LUMP_POS_Y = 155
+const BET_LUMP_POS_Y_SPACE = 15
 const ADD_DOUBLE_UP_CHANCE = 11
 const COIN_NUM_POS_X = 450
-const COIN_NUM_POS_Y = 135
+const COIN_NUM_POS_Y = 175
 const SLOT_MACHINE_NUMBER_Y_POS = 85
 
 export class SlotScene extends Scene {
@@ -96,10 +103,10 @@ export class SlotScene extends Scene {
     for (let i = 0; i < MAX_SLOT_BET; i++) {
       this.betLamps[i] = new ImageManager(
         this,
-        gameWidth / 2 - BET_LUMP_POS_X + BET_LUMP_POS_X_SPACE * i,
-        180,
-        [TextureKey.SlotButtonC, TextureKey.SlotButtonD],
-        0.6
+        BET_LUMP_POS_X,
+        BET_LUMP_POS_Y + BET_LUMP_POS_Y_SPACE * i,
+        [TextureKey.SlotBetLumpB, TextureKey.SlotBetLumpA],
+        0.4
       )
       this.add.existing(this.betLamps[i])
     }
@@ -115,12 +122,14 @@ export class SlotScene extends Scene {
       this.add.existing(this.bonusStars[i])
     }
 
-    this.doubleChanceIcon = this.add.image(80, 80, TextureKey.DoubleUpIconA).setScale(0.8)
+    this.doubleChanceIcon = this.add
+      .image(DOUBLE_UP_ICON_POS_X, DOUBLE_UP_ICON_POS_Y, TextureKey.DoubleUpIconA)
+      .setScale(0.8)
 
     this.betNumText = this.add
-      .text(100, 135, 'Bet: ' + this.betCount, {
+      .text(BET_NUM_TEXT_POS_X, BET_NUM_TEXT_POS_Y, 'Bet: ' + this.betCount, {
         fontFamily: 'Arial Black',
-        fontSize: 28,
+        fontSize: 32,
         color: '#ffffff',
         stroke: '#000000',
         strokeThickness: 8
@@ -141,7 +150,7 @@ export class SlotScene extends Scene {
       .setAlpha(0)
 
     this.doubleUpChanceNumText = this.add
-      .text(125, 90, '× ' + this.doubleUpChanceCount, {
+      .text(DOUBLE_UP_TEXT_POS_X, DOUBLE_UP_TEXT_POS_Y, '× ' + this.doubleUpChanceCount, {
         fontFamily: 'Cambria',
         fontSize: 30,
         color: '#ffffff',
@@ -252,11 +261,11 @@ export class SlotScene extends Scene {
       this.coinNumText.setText('COIN: ' + this.coinNum)
 
       if (this.betCount == 1) {
-        this.betLamps[0].addCount()
+        this.betLamps[2].addCount()
       } else if (this.betCount == 2) {
         this.betLamps[1].addCount()
       } else if (this.betCount == 3) {
-        this.betLamps[2].addCount()
+        this.betLamps[0].addCount()
       }
     }
   }
