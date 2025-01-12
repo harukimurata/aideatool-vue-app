@@ -9,6 +9,8 @@ enum TextureKey {
   SlotStartB = 'slot_start_b',
   SlotBetA = 'bet_button_a',
   SlotBetB = 'bet_button_b',
+  SlotBetLumpA = 'bet_lump_a',
+  SlotBetLumpB = 'bet_lump_b',
   SlotButtonA = 'slot_button_a',
   SlotButtonB = 'slot_button_b',
   SlotButtonC = 'slot_button_c',
