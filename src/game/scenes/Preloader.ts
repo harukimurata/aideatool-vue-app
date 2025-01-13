@@ -35,6 +35,7 @@ export class Preloader extends Scene {
     this.load.image(TextureKey.SlotBG, 'image/slot/slot_bg.png')
     this.load.image(TextureKey.SlotMachineOver, 'image/slot/slot_machine_over-02.png')
     this.load.image(TextureKey.SlotMachineUnder, 'image/slot/slot_machine_under-01.png')
+    this.load.image(TextureKey.SlotTitle, 'image/slot/slot_title_0.png')
     this.load.image(TextureKey.SlotStartA, 'image/slot/button/slot_start_a.png')
     this.load.image(TextureKey.SlotStartB, 'image/slot/button/slot_start_b.png')
     this.load.image(TextureKey.SlotBetA, 'image/slot/button/bet_button_a.png')

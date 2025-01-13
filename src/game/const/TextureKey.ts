@@ -5,6 +5,7 @@ enum TextureKey {
   PushHoverButton = 'pushHoverButton',
   SlotMachineOver = 'slot_machine_over',
   SlotMachineUnder = 'slot_machine_under',
+  SlotTitle = 'slot_title',
   SlotStartA = 'slot_start_a',
   SlotStartB = 'slot_start_b',
   SlotBetA = 'bet_button_a',

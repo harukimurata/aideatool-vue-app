@@ -111,6 +111,8 @@ export class SlotScene extends Scene {
       .image(gameWidth / 2, gameHeight / 2, TextureKey.SlotMachineOver)
       .setScale(1.2)
 
+    this.add.image(gameWidth / 2, gameHeight / 2 - 260, TextureKey.SlotTitle)
+
     for (let i = 0; i < MAX_SLOT_BET; i++) {
       this.betLamps[i] = new ImageManager(
         this,
@@ -122,16 +124,50 @@ export class SlotScene extends Scene {
       this.add.existing(this.betLamps[i])
     }
 
-    for (let i = 0; i < MAX_BONUS_STAR; i++) {
-      this.bonusStars[i] = new ImageManager(
-        this,
-        gameWidth / 2 - BONUS_POS_X + BONUS_POS_X_SPACE * i,
-        80,
-        [TextureKey.SlotStarB, TextureKey.SlotStarA, TextureKey.SlotStarC],
-        0.7
-      )
-      this.add.existing(this.bonusStars[i])
-    }
+    this.bonusStars[0] = new ImageManager(
+      this,
+      240,
+      130,
+      [TextureKey.SlotStarB, TextureKey.SlotStarA, TextureKey.SlotStarC],
+      0.3
+    )
+    this.add.existing(this.bonusStars[0])
+
+    this.bonusStars[1] = new ImageManager(
+      this,
+      263,
+      100,
+      [TextureKey.SlotStarB, TextureKey.SlotStarA, TextureKey.SlotStarC],
+      0.3
+    )
+    this.add.existing(this.bonusStars[1])
+
+    this.bonusStars[2] = new ImageManager(
+      this,
+      295,
+      130,
+      [TextureKey.SlotStarB, TextureKey.SlotStarA, TextureKey.SlotStarC],
+      0.3
+    )
+    this.add.existing(this.bonusStars[2])
+
+    this.bonusStars[3] = new ImageManager(
+      this,
+      328,
+      120,
+      [TextureKey.SlotStarB, TextureKey.SlotStarA, TextureKey.SlotStarC],
+      0.3
+    )
+    this.add.existing(this.bonusStars[3])
+
+    this.bonusStars[4] = new ImageManager(
+      this,
+      365,
+      143,
+      [TextureKey.SlotStarB, TextureKey.SlotStarA, TextureKey.SlotStarC],
+      0.3
+    )
+    this.add.existing(this.bonusStars[4])
 
     this.doubleUpIcon = this.add
       .image(DOUBLE_UP_ICON_POS_X, DOUBLE_UP_ICON_POS_Y, TextureKey.DoubleUpIconA)
