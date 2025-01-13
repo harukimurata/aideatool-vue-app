@@ -7,10 +7,12 @@ import ImageButton from '../components/ImageButton'
 import SlotReelNumber from '../components/SlotReelNumber'
 import ImageManager from '../components/ImageManager'
 import { calcSlotHand } from '../logic/slot'
-import { isEvenNumber } from '../utils'
+import { isEvenNumber, oneInNChance, generateRandomInt } from '../utils'
 import { delayPromise } from '../helper'
 import { SPECIAL_HANDS } from '../const/SlotHand'
 
+const MAX_REEL_COUNT = 999
+const ASSIST_COUNT = 30
 const SLOT_REEL_NUM = 3
 const STOP_BUTTON_NUM = 3
 const BET_VALUE = 2
@@ -29,8 +31,6 @@ const BET_PLUS_ICON_POS_X = 80
 const BET_PLUS_ICON_POS_Y = 130
 const BET_PLUS_TEXT_POS_X = 135
 const BET_PLUS_TEXT_POS_Y = 140
-const BONUS_POS_X = 100
-const BONUS_POS_X_SPACE = 50
 const BET_NUM_TEXT_POS_X = 165
 const BET_NUM_TEXT_POS_Y = 175
 const BET_LUMP_POS_X = 80
@@ -38,8 +38,10 @@ const BET_LUMP_POS_Y = 163
 const BET_LUMP_POS_Y_SPACE = 11
 const ADD_DOUBLE_UP = 11
 const ADD_BET_PLUS = 11
-const COIN_NUM_POS_X = 450
+const COIN_NUM_POS_X = 460
 const COIN_NUM_POS_Y = 175
+const REEL_COUNT_POS_X = 515
+const REEL_COUNT_POS_Y = 80
 const SLOT_MACHINE_NUMBER_Y_POS = 85
 
 export class SlotScene extends Scene {
@@ -52,6 +54,7 @@ export class SlotScene extends Scene {
   betNumText!: GameObjects.Text
   addCoinText!: GameObjects.Text
   coinNumText!: GameObjects.Text
+  reelCountText!: GameObjects.Text
 
   doubleUpIcon!: GameObjects.Image
   doubleUpNumText!: GameObjects.Text
@@ -68,6 +71,8 @@ export class SlotScene extends Scene {
   slotReels: SlotReelNumber[] = []
   slotStopButtons: ImageButton[] = []
 
+  private reel_count = 0
+  private assist_count = 0
   private betCount = 0
   private betValue = 0
   private isBet = false
@@ -88,6 +93,8 @@ export class SlotScene extends Scene {
    * アセット初期化
    */
   create() {
+    this.reel_count = 0
+    this.betCount = 0
     const gameWidth = this.scale.width
     const gameHeight = this.scale.height
     this.background = this.add.image(gameWidth / 2, gameHeight / 2, TextureKey.SlotBG)
@@ -225,7 +232,18 @@ export class SlotScene extends Scene {
     this.coinNumText = this.add
       .text(COIN_NUM_POS_X, COIN_NUM_POS_Y, 'COIN: ' + this.coinNum, {
         fontFamily: 'Cambria',
-        fontSize: 38,
+        fontSize: 34,
+        color: '#ffffff',
+        stroke: '#000000',
+        strokeThickness: 8
+      })
+      .setOrigin(0.5)
+      .setDepth(100)
+
+    this.reelCountText = this.add
+      .text(REEL_COUNT_POS_X, REEL_COUNT_POS_Y, `${this.reel_count}`, {
+        fontFamily: 'Cambria',
+        fontSize: 34,
         color: '#ffffff',
         stroke: '#000000',
         strokeThickness: 8
@@ -275,6 +293,10 @@ export class SlotScene extends Scene {
 
             if (this.isBonusMax) {
               this.slotReels[i].setBonusNumber()
+            } else {
+              if (this.assist_count <= 0) {
+                this.slotReels[i].setBonusNumber()
+              }
             }
 
             this.slotResult()
@@ -287,6 +309,7 @@ export class SlotScene extends Scene {
 
     EventBus.emit('current-scene-ready', this)
 
+    this.initAssistCountRange()
     this.initSlot()
     for (let i = 0; i < SLOT_REEL_NUM; i++) {
       this.slotReels[i].init(this)
@@ -353,6 +376,8 @@ export class SlotScene extends Scene {
     await delayPromise(this, 300)
     this.isStartReel = true
     this.isReplay = false
+    this.assist_count--
+    this.updateReelCount()
   }
 
   /**
@@ -531,6 +556,17 @@ export class SlotScene extends Scene {
   }
 
   /**
+   * 回転数更新
+   */
+  private updateReelCount() {
+    this.reel_count++
+    if (this.reel_count > MAX_REEL_COUNT) {
+      this.reel_count = 0
+    }
+    this.reelCountText.setText(`${this.reel_count}`)
+  }
+
+  /**
    * スロット初期化
    */
   private initSlot() {
@@ -570,9 +606,23 @@ export class SlotScene extends Scene {
           }
         }
 
+        if (this.assist_count <= 0) {
+          this.initAssistCountRange()
+        }
+
         this.doubleUpNumText.setText('× ' + this.doubleUpCount)
         this.betPlusNumText.setText('× ' + this.betPlusCount)
       })
     }
+  }
+
+  /**
+   * 回転数初期化
+   */
+  private initAssistCountRange() {
+    const assist_count_range = generateRandomInt(1, 10)
+    this.assist_count = oneInNChance(2)
+      ? ASSIST_COUNT - assist_count_range
+      : ASSIST_COUNT + assist_count_range
   }
 }
