@@ -47,8 +47,8 @@ export class SlotScene extends Scene {
   addCoinText!: GameObjects.Text
   coinNumText!: GameObjects.Text
 
-  doubleChanceIcon!: GameObjects.Image
-  doubleUpChanceNumText!: GameObjects.Text
+  doubleUpIcon!: GameObjects.Image
+  doubleUpNumText!: GameObjects.Text
 
   slotBetButton!: ImageButton
   slotStartButton!: ImageButton
@@ -122,7 +122,7 @@ export class SlotScene extends Scene {
       this.add.existing(this.bonusStars[i])
     }
 
-    this.doubleChanceIcon = this.add
+    this.doubleUpIcon = this.add
       .image(DOUBLE_UP_ICON_POS_X, DOUBLE_UP_ICON_POS_Y, TextureKey.DoubleUpIconA)
       .setScale(0.8)
 
@@ -149,7 +149,7 @@ export class SlotScene extends Scene {
       .setDepth(100)
       .setAlpha(0)
 
-    this.doubleUpChanceNumText = this.add
+    this.doubleUpNumText = this.add
       .text(DOUBLE_UP_TEXT_POS_X, DOUBLE_UP_TEXT_POS_Y, '× ' + this.doubleUpChanceCount, {
         fontFamily: 'Cambria',
         fontSize: 30,
@@ -480,9 +480,9 @@ export class SlotScene extends Scene {
         this.doubleUpChanceCount = this.doubleUpChanceCount - 1
         if (this.doubleUpChanceCount < 0) {
           this.doubleUpChanceCount = 0
-          this.doubleUpChanceNumText.setText('× ' + this.doubleUpChanceCount)
+          this.doubleUpNumText.setText('× ' + this.doubleUpChanceCount)
         } else {
-          this.doubleUpChanceNumText.setText('× ' + this.doubleUpChanceCount)
+          this.doubleUpNumText.setText('× ' + this.doubleUpChanceCount)
         }
       })
     }
