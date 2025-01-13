@@ -10,3 +10,21 @@ export function isEvenNumber(number1: number, number2: number, number3: number):
   const num = number1 + number2 + number3
   return num % 2 == 0
 }
+
+/**
+ * min ~ maxの間で整数を1つランダムに返す
+ * @param n
+ * @returns
+ */
+export function generateRandomInt(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
+/**
+ * n分の1の確率でtrueを返す
+ * @param n
+ * @returns
+ */
+export function oneInNChance(n: number) {
+  return Math.random() < 1 / n
+}
