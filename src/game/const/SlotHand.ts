@@ -7,7 +7,8 @@ interface SlotHand {
 
 export const SPECIAL_HANDS = {
   REPLAY: 99900,
-  DOUBLE_UP: 99901
+  DOUBLE_UP: 99901,
+  BET_PLUS: 99902
 }
 
 export const slotHands: SlotHand[] = [
@@ -64,6 +65,12 @@ export const slotHands: SlotHand[] = [
     Number2: 9,
     Number3: 9,
     value: SPECIAL_HANDS.DOUBLE_UP
+  },
+  {
+    Number1: 10,
+    Number2: 10,
+    Number3: 10,
+    value: SPECIAL_HANDS.BET_PLUS
   },
   {
     Number1: 1,

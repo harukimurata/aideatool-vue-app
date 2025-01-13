@@ -13,6 +13,7 @@ import { SPECIAL_HANDS } from '../const/SlotHand'
 
 const SLOT_REEL_NUM = 3
 const STOP_BUTTON_NUM = 3
+const BET_VALUE = 2
 const MAX_SLOT_BET = 3
 const MAX_BONUS_STAR = 5
 const SLOT_REEL_POS_X = 170
@@ -21,9 +22,13 @@ const STOP_BUTTON_POS_X = 120
 const STOP_BUTTON_POS_X_SPACE = 120
 const STOP_BUTTON_POS_Y = 70
 const DOUBLE_UP_ICON_POS_X = 80
-const DOUBLE_UP_ICON_POS_Y = 130
+const DOUBLE_UP_ICON_POS_Y = 80
 const DOUBLE_UP_TEXT_POS_X = 135
-const DOUBLE_UP_TEXT_POS_Y = 140
+const DOUBLE_UP_TEXT_POS_Y = 90
+const BET_PLUS_ICON_POS_X = 80
+const BET_PLUS_ICON_POS_Y = 130
+const BET_PLUS_TEXT_POS_X = 135
+const BET_PLUS_TEXT_POS_Y = 140
 const BONUS_POS_X = 100
 const BONUS_POS_X_SPACE = 50
 const BET_NUM_TEXT_POS_X = 165
@@ -31,7 +36,8 @@ const BET_NUM_TEXT_POS_Y = 175
 const BET_LUMP_POS_X = 80
 const BET_LUMP_POS_Y = 163
 const BET_LUMP_POS_Y_SPACE = 11
-const ADD_DOUBLE_UP_CHANCE = 11
+const ADD_DOUBLE_UP = 11
+const ADD_BET_PLUS = 11
 const COIN_NUM_POS_X = 450
 const COIN_NUM_POS_Y = 175
 const SLOT_MACHINE_NUMBER_Y_POS = 85
@@ -50,6 +56,9 @@ export class SlotScene extends Scene {
   doubleUpIcon!: GameObjects.Image
   doubleUpNumText!: GameObjects.Text
 
+  betPlusIcon!: GameObjects.Image
+  betPlusNumText!: GameObjects.Text
+
   slotBetButton!: ImageButton
   slotStartButton!: ImageButton
 
@@ -60,11 +69,13 @@ export class SlotScene extends Scene {
   slotStopButtons: ImageButton[] = []
 
   private betCount = 0
+  private betValue = 0
   private isBet = false
   private addCoinNum = 0
   private coinNum = 1000
   private isStartReel = false
-  private doubleUpChanceCount = 0
+  private doubleUpCount = 0
+  private betPlusCount = 0
   private isBonusMax = false
   private bonusCount = 0
   private isReplay = false
@@ -126,6 +137,10 @@ export class SlotScene extends Scene {
       .image(DOUBLE_UP_ICON_POS_X, DOUBLE_UP_ICON_POS_Y, TextureKey.DoubleUpIconA)
       .setScale(0.8)
 
+    this.betPlusIcon = this.add
+      .image(BET_PLUS_ICON_POS_X, BET_PLUS_ICON_POS_Y, TextureKey.BetPlusIcon)
+      .setScale(0.8)
+
     this.betNumText = this.add
       .text(BET_NUM_TEXT_POS_X, BET_NUM_TEXT_POS_Y, 'Bet: ' + this.betCount, {
         fontFamily: 'Arial Black',
@@ -150,7 +165,18 @@ export class SlotScene extends Scene {
       .setAlpha(0)
 
     this.doubleUpNumText = this.add
-      .text(DOUBLE_UP_TEXT_POS_X, DOUBLE_UP_TEXT_POS_Y, '× ' + this.doubleUpChanceCount, {
+      .text(DOUBLE_UP_TEXT_POS_X, DOUBLE_UP_TEXT_POS_Y, '× ' + this.doubleUpCount, {
+        fontFamily: 'Cambria',
+        fontSize: 30,
+        color: '#ffffff',
+        stroke: '#000000',
+        strokeThickness: 8
+      })
+      .setOrigin(0.5)
+      .setDepth(100)
+
+    this.betPlusNumText = this.add
+      .text(BET_PLUS_TEXT_POS_X, BET_PLUS_TEXT_POS_Y, '× ' + this.betPlusCount, {
         fontFamily: 'Cambria',
         fontSize: 30,
         color: '#ffffff',
@@ -256,8 +282,17 @@ export class SlotScene extends Scene {
   private slotBet() {
     if (this.betCount < MAX_SLOT_BET) {
       this.betCount = this.betCount + 1
-      this.betNumText.setText('Bet: ' + this.betCount * 2)
-      this.coinNum = this.coinNum - 2
+      let addBet = 0
+      if (this.betPlusCount > 0) {
+        addBet = this.betCount * (BET_VALUE + 1)
+      } else {
+        addBet = this.betCount * BET_VALUE
+      }
+      this.betValue = addBet
+      this.betNumText.setText('Bet: ' + this.betValue)
+
+      //持ちコイン更新
+      this.coinNum = this.coinNum - BET_VALUE
       this.coinNumText.setText('COIN: ' + this.coinNum)
 
       if (this.betCount == 1) {
@@ -320,21 +355,23 @@ export class SlotScene extends Scene {
       case SPECIAL_HANDS.REPLAY:
         //リプレイ
         this.isReplay = true
-        this.betCount = 3
-        this.betNumText.setText('Bet: ' + this.betCount * 2)
         for (let i = 0; i < MAX_SLOT_BET; i++) {
           this.betLamps[i].setImage(1)
         }
         break
 
       case SPECIAL_HANDS.DOUBLE_UP:
-        //ダブルアップチャンス
-        this.doubleUpChanceCount = this.doubleUpChanceCount + ADD_DOUBLE_UP_CHANCE
+        //ダブルアップ
+        this.doubleUpCount = this.doubleUpCount + ADD_DOUBLE_UP
+        break
+      case SPECIAL_HANDS.BET_PLUS:
+        //BET量加算
+        this.betPlusCount = this.betPlusCount + ADD_BET_PLUS
         break
 
       default:
         let newCoinNum = 0
-        if (this.doubleUpChanceCount > 0) {
+        if (this.doubleUpCount > 0) {
           this.addCoinNum = hand * 2
           newCoinNum = this.coinNum + this.addCoinNum
         } else {
@@ -469,6 +506,7 @@ export class SlotScene extends Scene {
             this.betLamps[i].setInit()
           }
           this.betCount = 0
+          this.betValue = 0
           this.isBet = false
           this.addCoinNum = 0
           this.betNumText.setText('Bet: ' + this.betCount)
@@ -477,13 +515,24 @@ export class SlotScene extends Scene {
         this.slotStartButton.activeButton()
         this.isStartReel = false
 
-        this.doubleUpChanceCount = this.doubleUpChanceCount - 1
-        if (this.doubleUpChanceCount < 0) {
-          this.doubleUpChanceCount = 0
-          this.doubleUpNumText.setText('× ' + this.doubleUpChanceCount)
-        } else {
-          this.doubleUpNumText.setText('× ' + this.doubleUpChanceCount)
+        //ダブルアップのカウント減算
+        if (this.doubleUpCount > 0) {
+          this.doubleUpCount = this.doubleUpCount - 1
+          if (this.doubleUpCount < 0) {
+            this.doubleUpCount = 0
+          }
         }
+
+        //ベットプラスカウント減算
+        if (this.betPlusCount > 0) {
+          this.betPlusCount = this.betPlusCount - 1
+          if (this.betPlusCount < 0) {
+            this.betPlusCount = 0
+          }
+        }
+
+        this.doubleUpNumText.setText('× ' + this.doubleUpCount)
+        this.betPlusNumText.setText('× ' + this.betPlusCount)
       })
     }
   }

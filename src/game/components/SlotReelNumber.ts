@@ -50,6 +50,10 @@ export default class SlotReelNumber extends Phaser.GameObjects.Image {
     {
       textureName: TextureKey.DoubleUp,
       value: 9
+    },
+    {
+      textureName: TextureKey.BetPlus,
+      value: 10
     }
   ]
 
