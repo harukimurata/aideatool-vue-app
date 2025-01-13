@@ -153,7 +153,7 @@ export class SlotScene extends Scene {
       .setDepth(100)
 
     this.addCoinText = this.add
-      .text(500, 85, '+ ' + this.addCoinNum, {
+      .text(500, 120, '+ ' + this.addCoinNum, {
         fontFamily: 'Cambria',
         fontSize: 38,
         color: '#ff0000',
@@ -251,6 +251,7 @@ export class SlotScene extends Scene {
 
     EventBus.emit('current-scene-ready', this)
 
+    this.initSlot()
     for (let i = 0; i < SLOT_REEL_NUM; i++) {
       this.slotReels[i].init(this)
     }
@@ -371,11 +372,12 @@ export class SlotScene extends Scene {
 
       default:
         let newCoinNum = 0
+        const getCoin = hand * this.betValue
         if (this.doubleUpCount > 0) {
-          this.addCoinNum = hand * 2
+          this.addCoinNum = getCoin * 2
           newCoinNum = this.coinNum + this.addCoinNum
         } else {
-          this.addCoinNum = hand
+          this.addCoinNum = getCoin
           newCoinNum = this.coinNum + this.addCoinNum
         }
 
@@ -392,12 +394,13 @@ export class SlotScene extends Scene {
     this.addCoinText.setText('+ ' + this.addCoinNum)
     this.tweens.add({
       targets: this.addCoinText,
-      y: 100,
+      y: 140,
       alpha: 1,
       duration: 300,
       onComplete: async () => {
         await delayPromise(this, 700)
         this.addCoinText.setAlpha(0)
+        this.addCoinText.setY(120)
       }
     })
     let oldValue = this.coinNum
