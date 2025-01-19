@@ -1,74 +1,98 @@
 import { GameObjects, Scene } from 'phaser'
 
 import { EventBus } from '../EventBus'
-import SceneKey from '../const/SceneKey'
-import TextureKey from '../const/TextureKey'
 import ImageButton from '../components/ImageButton'
-import { calcSlotHand } from '../utils'
-import { delayPromise } from '../helper'
+import ImageManager from '../components/ImageManager'
+import KeyBoardManager from '../components/KeyBoardManager'
+import SlotReelNumber from '../components/SlotReelNumber'
+import KeyCodes from '../const/KeyCode'
+import SceneKey from '../const/SceneKey'
 import { SPECIAL_HANDS } from '../const/SlotHand'
+import TextureKey from '../const/TextureKey'
+import { delayPromise } from '../helper'
+import { calcSlotHand } from '../logic/slot'
+import { generateRandomInt, isEvenNumber, oneInNChance } from '../utils'
 
+const MAX_REEL_COUNT = 999
+const ASSIST_COUNT = 30
+const SLOT_REEL_NUM = 3
+const STOP_BUTTON_NUM = 3
+const BET_VALUE = 2
 const MAX_SLOT_BET = 3
-const ADD_DOUBLE_UP_CHANCE = 11
-const COIN_NUM_POS_X = 450
-const COIN_NUM_POS_Y = 140
-
-enum REEL_NUMBER {
-  LEFT,
-  CENTER,
-  RIGHT
-}
+const MAX_BONUS_STAR = 5
+const SLOT_REEL_POS_X = 170
+const SLOT_REEL_POS_X_SPACE = 170
+const STOP_BUTTON_POS_X = 120
+const STOP_BUTTON_POS_X_SPACE = 120
+const STOP_BUTTON_POS_Y = 70
+const DOUBLE_UP_ICON_POS_X = 80
+const DOUBLE_UP_ICON_POS_Y = 80
+const DOUBLE_UP_TEXT_POS_X = 135
+const DOUBLE_UP_TEXT_POS_Y = 90
+const BET_PLUS_ICON_POS_X = 80
+const BET_PLUS_ICON_POS_Y = 130
+const BET_PLUS_TEXT_POS_X = 135
+const BET_PLUS_TEXT_POS_Y = 140
+const BET_NUM_TEXT_POS_X = 165
+const BET_NUM_TEXT_POS_Y = 175
+const BET_LUMP_POS_X = 80
+const BET_LUMP_POS_Y = 163
+const BET_LUMP_POS_Y_SPACE = 11
+const ADD_DOUBLE_UP = 11
+const ADD_BET_PLUS = 11
+const COIN_NUM_POS_X = 460
+const COIN_NUM_POS_Y = 175
+const REEL_COUNT_POS_X = 515
+const REEL_COUNT_POS_Y = 80
+const SLOT_MACHINE_NUMBER_Y_POS = 85
+const KEY_SUPPORT_POS_Y = 475
 
 export class SlotScene extends Scene {
+  gameWidth!: number
+  gameHeight!: number
+
   background!: GameObjects.Image
+  slotMachineUnder!: GameObjects.Image
+  slotMachineOver!: GameObjects.Image
   betNumText!: GameObjects.Text
   addCoinText!: GameObjects.Text
   coinNumText!: GameObjects.Text
-  doubleUpChanceNumText!: GameObjects.Text
+  reelCountText!: GameObjects.Text
 
-  slotMachineUnder!: GameObjects.Image
-  slotMachineOver!: GameObjects.Image
-  slotMachineNumber1!: GameObjects.Image
-  slotMachineNumber2!: GameObjects.Image
-  slotMachineNumber3!: GameObjects.Image
+  doubleUpIcon!: GameObjects.Image
+  doubleUpNumText!: GameObjects.Text
+
+  betPlusIcon!: GameObjects.Image
+  betPlusNumText!: GameObjects.Text
 
   slotBetButton!: ImageButton
   slotStartButton!: ImageButton
-  slotStopButton1!: ImageButton
-  slotStopButton2!: ImageButton
-  slotStopButton3!: ImageButton
-  slotChargeButton1!: GameObjects.Image
-  slotChargeButton2!: GameObjects.Image
-  slotChargeButton3!: GameObjects.Image
-  doubleChanceIcon!: GameObjects.Image
 
+  bonusStars: ImageManager[] = []
+  betLamps: ImageManager[] = []
+
+  slotReels: SlotReelNumber[] = []
+  slotStopButtons: ImageButton[] = []
+
+  keyD!: KeyBoardManager
+  keyG!: KeyBoardManager
+  keyK!: KeyBoardManager
+  keySPACE!: KeyBoardManager
+  keyENTER!: KeyBoardManager
+
+  private reel_count = 0
+  private assist_count = 0
   private betCount = 0
+  private betValue = 0
   private isBet = false
   private addCoinNum = 0
   private coinNum = 1000
-  private saveStopNumber: number | null = null
-  private saveStopNumber1: number | null = null
-  private saveStopNumber2: number | null = null
-  private saveStopNumber3: number | null = null
   private isStartReel = false
-  private isStopNumber1 = false
-  private isStopNumber2 = false
-  private isStopNumber3 = false
-  private doubleUpChanceCount = 0
+  private doubleUpCount = 0
+  private betPlusCount = 0
+  private isBonusMax = false
+  private bonusCount = 0
   private isReplay = false
-
-  private slotNumberArray: string[] = [
-    TextureKey.SlotNumber0,
-    TextureKey.SlotNumber1,
-    TextureKey.SlotNumber2,
-    TextureKey.SlotNumber3,
-    TextureKey.SlotNumber4,
-    TextureKey.SlotNumber5,
-    TextureKey.SlotNumber6,
-    TextureKey.SlotNumber7,
-    TextureKey.SlotReplay,
-    TextureKey.DoubleUp
-  ]
 
   constructor() {
     super(SceneKey.SlotScene)
@@ -78,40 +102,101 @@ export class SlotScene extends Scene {
    * アセット初期化
    */
   create() {
+    this.reel_count = 0
+    this.betCount = 0
     const gameWidth = this.scale.width
     const gameHeight = this.scale.height
     this.background = this.add.image(gameWidth / 2, gameHeight / 2, TextureKey.SlotBG)
     this.slotMachineUnder = this.add
-      .image(gameWidth / 2, gameHeight / 2 - 86, TextureKey.SlotMachineUnder)
-      .setScale(1.15)
-    this.slotMachineNumber1 = this.add
-      .image(gameWidth / 2 - 170, gameHeight / 2 - 86, TextureKey.SlotNumber0)
-      .setScale(1.5)
-    this.slotMachineNumber2 = this.add
-      .image(gameWidth / 2, gameHeight / 2 - 86, TextureKey.SlotNumber0)
-      .setScale(1.5)
-    this.slotMachineNumber3 = this.add
-      .image(gameWidth / 2 + 175, gameHeight / 2 - 86, TextureKey.SlotNumber0)
-      .setScale(1.5)
+      .image(gameWidth / 2, gameHeight / 2, TextureKey.SlotMachineUnder)
+      .setScale(1.2)
+
+    for (let i = 0; i < SLOT_REEL_NUM; i++) {
+      this.slotReels[i] = new SlotReelNumber(
+        this,
+        gameWidth / 2 - SLOT_REEL_POS_X + SLOT_REEL_POS_X_SPACE * i,
+        gameHeight / 2 - SLOT_MACHINE_NUMBER_Y_POS,
+        TextureKey.SlotNumber0,
+        gameWidth,
+        gameHeight
+      ).setScale(1.5)
+      this.add.existing(this.slotReels[i])
+    }
+
     this.slotMachineOver = this.add
       .image(gameWidth / 2, gameHeight / 2, TextureKey.SlotMachineOver)
-      .setScale(1.15)
-    this.slotChargeButton1 = this.add
-      .image(gameWidth / 2 - 170, 190, TextureKey.SlotButtonC)
-      .setScale(0.6)
-    this.slotChargeButton2 = this.add
-      .image(gameWidth / 2, 190, TextureKey.SlotButtonC)
-      .setScale(0.6)
-    this.slotChargeButton3 = this.add
-      .image(gameWidth / 2 + 170, 190, TextureKey.SlotButtonC)
-      .setScale(0.6)
+      .setScale(1.2)
 
-    this.doubleChanceIcon = this.add.image(465, 90, TextureKey.DoubleUpIconA).setScale(0.8)
+    this.add.image(gameWidth / 2, gameHeight / 2 - 260, TextureKey.SlotTitle)
+
+    for (let i = 0; i < MAX_SLOT_BET; i++) {
+      this.betLamps[i] = new ImageManager(
+        this,
+        BET_LUMP_POS_X,
+        BET_LUMP_POS_Y + BET_LUMP_POS_Y_SPACE * i,
+        [TextureKey.SlotBetLumpB, TextureKey.SlotBetLumpA],
+        0.4
+      )
+      this.add.existing(this.betLamps[i])
+    }
+
+    this.bonusStars[0] = new ImageManager(
+      this,
+      240,
+      130,
+      [TextureKey.SlotStarB, TextureKey.SlotStarA, TextureKey.SlotStarC],
+      0.3
+    )
+    this.add.existing(this.bonusStars[0])
+
+    this.bonusStars[1] = new ImageManager(
+      this,
+      263,
+      100,
+      [TextureKey.SlotStarB, TextureKey.SlotStarA, TextureKey.SlotStarC],
+      0.3
+    )
+    this.add.existing(this.bonusStars[1])
+
+    this.bonusStars[2] = new ImageManager(
+      this,
+      295,
+      130,
+      [TextureKey.SlotStarB, TextureKey.SlotStarA, TextureKey.SlotStarC],
+      0.3
+    )
+    this.add.existing(this.bonusStars[2])
+
+    this.bonusStars[3] = new ImageManager(
+      this,
+      328,
+      120,
+      [TextureKey.SlotStarB, TextureKey.SlotStarA, TextureKey.SlotStarC],
+      0.3
+    )
+    this.add.existing(this.bonusStars[3])
+
+    this.bonusStars[4] = new ImageManager(
+      this,
+      365,
+      143,
+      [TextureKey.SlotStarB, TextureKey.SlotStarA, TextureKey.SlotStarC],
+      0.3
+    )
+    this.add.existing(this.bonusStars[4])
+
+    this.doubleUpIcon = this.add
+      .image(DOUBLE_UP_ICON_POS_X, DOUBLE_UP_ICON_POS_Y, TextureKey.DoubleUpIconA)
+      .setScale(0.8)
+
+    this.betPlusIcon = this.add
+      .image(BET_PLUS_ICON_POS_X, BET_PLUS_ICON_POS_Y, TextureKey.BetPlusIcon)
+      .setScale(0.8)
 
     this.betNumText = this.add
-      .text(100, 140, 'Bet: ' + this.betCount, {
+      .text(BET_NUM_TEXT_POS_X, BET_NUM_TEXT_POS_Y, 'Bet: ' + this.betCount, {
         fontFamily: 'Arial Black',
-        fontSize: 28,
+        fontSize: 32,
         color: '#ffffff',
         stroke: '#000000',
         strokeThickness: 8
@@ -120,7 +205,7 @@ export class SlotScene extends Scene {
       .setDepth(100)
 
     this.addCoinText = this.add
-      .text(400, 85, '+ ' + this.addCoinNum, {
+      .text(500, 120, '+ ' + this.addCoinNum, {
         fontFamily: 'Cambria',
         fontSize: 38,
         color: '#ff0000',
@@ -131,10 +216,21 @@ export class SlotScene extends Scene {
       .setDepth(100)
       .setAlpha(0)
 
-    this.doubleUpChanceNumText = this.add
-      .text(520, 100, '× ' + this.doubleUpChanceCount, {
+    this.doubleUpNumText = this.add
+      .text(DOUBLE_UP_TEXT_POS_X, DOUBLE_UP_TEXT_POS_Y, '× ' + this.doubleUpCount, {
         fontFamily: 'Cambria',
-        fontSize: 28,
+        fontSize: 30,
+        color: '#ffffff',
+        stroke: '#000000',
+        strokeThickness: 8
+      })
+      .setOrigin(0.5)
+      .setDepth(100)
+
+    this.betPlusNumText = this.add
+      .text(BET_PLUS_TEXT_POS_X, BET_PLUS_TEXT_POS_Y, '× ' + this.betPlusCount, {
+        fontFamily: 'Cambria',
+        fontSize: 30,
         color: '#ffffff',
         stroke: '#000000',
         strokeThickness: 8
@@ -145,7 +241,18 @@ export class SlotScene extends Scene {
     this.coinNumText = this.add
       .text(COIN_NUM_POS_X, COIN_NUM_POS_Y, 'COIN: ' + this.coinNum, {
         fontFamily: 'Cambria',
-        fontSize: 38,
+        fontSize: 34,
+        color: '#ffffff',
+        stroke: '#000000',
+        strokeThickness: 8
+      })
+      .setOrigin(0.5)
+      .setDepth(100)
+
+    this.reelCountText = this.add
+      .text(REEL_COUNT_POS_X, REEL_COUNT_POS_Y, `${this.reel_count}`, {
+        fontFamily: 'Cambria',
+        fontSize: 34,
         color: '#ffffff',
         stroke: '#000000',
         strokeThickness: 8
@@ -160,9 +267,7 @@ export class SlotScene extends Scene {
       TextureKey.SlotBetA,
       TextureKey.SlotBetB,
       () => {
-        if (!this.isStartReel && this.coinNum > 0) {
-          this.slotBet()
-        }
+        this.onBet()
       }
     ).setScale(0.6)
     this.add.existing(this.slotBetButton)
@@ -174,62 +279,100 @@ export class SlotScene extends Scene {
       TextureKey.SlotStartA,
       TextureKey.SlotStartB,
       () => {
-        if (!this.isStartReel && this.betCount >= 1) {
-          this.startReel()
-        }
+        this.onStartReel()
       }
     ).setScale(0.7)
     this.add.existing(this.slotStartButton)
 
-    this.slotStopButton1 = new ImageButton(
-      this,
-      gameWidth / 2 - 120,
-      gameHeight / 2 + 70,
-      TextureKey.SlotButtonA,
-      TextureKey.SlotButtonB,
-      () => {
-        if (this.isStartReel && !this.isStopNumber1) {
-          this.stopReel(REEL_NUMBER.LEFT)
+    for (let i = 0; i < STOP_BUTTON_NUM; i++) {
+      this.slotStopButtons[i] = new ImageButton(
+        this,
+        gameWidth / 2 - STOP_BUTTON_POS_X + STOP_BUTTON_POS_X_SPACE * i,
+        gameHeight / 2 + STOP_BUTTON_POS_Y,
+        TextureKey.SlotButtonA,
+        TextureKey.SlotButtonB,
+        () => {
+          this.onStopReel(i)
         }
-      }
-    ).setScale(0.9)
-    this.add.existing(this.slotStopButton1)
+      ).setScale(0.9)
+      this.add.existing(this.slotStopButtons[i])
+    }
 
-    this.slotStopButton2 = new ImageButton(
-      this,
-      gameWidth / 2,
-      gameHeight / 2 + 70,
-      TextureKey.SlotButtonA,
-      TextureKey.SlotButtonB,
-      () => {
-        if (this.isStartReel && !this.isStopNumber2) {
-          this.stopReel(REEL_NUMBER.CENTER)
-        }
-      }
-    ).setScale(0.9)
-    this.add.existing(this.slotStopButton2)
+    this.add.text(55, KEY_SUPPORT_POS_Y, 'Space', {
+      fontFamily: 'Cambria',
+      fontSize: 18,
+      color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 8
+    })
 
-    this.slotStopButton3 = new ImageButton(
-      this,
-      gameWidth / 2 + 120,
-      gameHeight / 2 + 70,
-      TextureKey.SlotButtonA,
-      TextureKey.SlotButtonB,
-      () => {
-        if (this.isStartReel && !this.isStopNumber3) {
-          this.stopReel(REEL_NUMBER.RIGHT)
-        }
-      }
-    ).setScale(0.9)
-    this.add.existing(this.slotStopButton3)
+    this.add.text(170, KEY_SUPPORT_POS_Y + 5, 'D', {
+      fontFamily: 'Cambria',
+      fontSize: 18,
+      color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 8
+    })
+
+    this.add.text(290, KEY_SUPPORT_POS_Y + 5, 'G', {
+      fontFamily: 'Cambria',
+      fontSize: 18,
+      color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 8
+    })
+
+    this.add.text(410, KEY_SUPPORT_POS_Y + 5, 'K', {
+      fontFamily: 'Cambria',
+      fontSize: 18,
+      color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 8
+    })
+
+    this.add.text(495, KEY_SUPPORT_POS_Y + 5, 'Enter', {
+      fontFamily: 'Cambria',
+      fontSize: 18,
+      color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 8
+    })
 
     EventBus.emit('current-scene-ready', this)
+
+    this.keyD = new KeyBoardManager(this, KeyCodes.D, () => {
+      this.onStopReel(0)
+    })
+    this.keyG = new KeyBoardManager(this, KeyCodes.G, () => {
+      this.onStopReel(1)
+    })
+    this.keyK = new KeyBoardManager(this, KeyCodes.K, () => {
+      this.onStopReel(2)
+    })
+    this.keySPACE = new KeyBoardManager(this, KeyCodes.SPACE, () => {
+      this.onBet()
+    })
+    this.keyENTER = new KeyBoardManager(this, KeyCodes.ENTER, () => {
+      this.onStartReel()
+    })
+
+    this.initAssistCountRange()
+    this.initSlot()
+    for (let i = 0; i < SLOT_REEL_NUM; i++) {
+      this.slotReels[i].init(this)
+    }
+
+    this.keyD.setIsFunction(true)
+    this.keyG.setIsFunction(true)
+    this.keyK.setIsFunction(true)
+    this.keySPACE.setIsFunction(true)
+    this.keyENTER.setIsFunction(true)
   }
 
   /**
    * ゲームループ
    */
-  update() {
+  update(time: number, delta: number) {
     if (!this.isBet) {
       if (this.betCount < 1) {
         this.slotStartButton.setTexture(TextureKey.SlotStartB)
@@ -239,26 +382,49 @@ export class SlotScene extends Scene {
       }
     }
 
-    if (this.isStartReel) {
-      const slotNumber1 = Math.floor(Math.random() * 9) + 1
-      const slotNumber2 = Math.floor(Math.random() * 9) + 1
-      const slotNumber3 = Math.floor(Math.random() * 9) + 1
+    this.keyD.down()
+    this.keyG.down()
+    this.keyK.down()
+    this.keySPACE.down()
+    this.keyENTER.down()
 
-      if (!this.isStopNumber1) {
-        const slotNumber = this.expectedValue(slotNumber1)
-        this.saveStopNumber1 = slotNumber
-        this.slotMachineNumber1.setTexture(this.slotNumberArray[slotNumber])
+    if (this.isStartReel) {
+      this.slotReels[0].update(delta)
+      this.slotReels[1].update(delta)
+      this.slotReels[2].update(delta)
+    }
+  }
+
+  //ベット処理
+  private onBet() {
+    if (!this.isStartReel && this.coinNum > 0) {
+      this.slotBet()
+    }
+  }
+
+  //リールスタート処理
+  private onStartReel() {
+    if (!this.isStartReel && this.betCount >= 1) {
+      this.slotStartButton.inactiveButton()
+      this.startReel()
+    }
+  }
+
+  //リールストップ処理
+  private onStopReel(reelNumber: number) {
+    if (this.isStartReel && !this.slotReels[reelNumber].getIsStop()) {
+      this.slotReels[reelNumber].setIsStop(true)
+
+      if (this.isBonusMax) {
+        this.slotReels[reelNumber].setBonusNumber()
+      } else {
+        if (this.assist_count <= 0) {
+          this.slotReels[reelNumber].setBonusNumber()
+        }
       }
-      if (!this.isStopNumber2) {
-        const slotNumber = this.expectedValue(slotNumber2)
-        this.saveStopNumber2 = slotNumber
-        this.slotMachineNumber2.setTexture(this.slotNumberArray[slotNumber])
-      }
-      if (!this.isStopNumber3) {
-        const slotNumber = this.expectedValue(slotNumber3)
-        this.saveStopNumber3 = slotNumber
-        this.slotMachineNumber3.setTexture(this.slotNumberArray[slotNumber])
-      }
+
+      this.slotResult()
+      this.slotReels[reelNumber].stopAnimation(this)
     }
   }
 
@@ -268,16 +434,25 @@ export class SlotScene extends Scene {
   private slotBet() {
     if (this.betCount < MAX_SLOT_BET) {
       this.betCount = this.betCount + 1
-      this.betNumText.setText('Bet: ' + this.betCount * 2)
-      this.coinNum = this.coinNum - 2
+      let addBet = 0
+      if (this.betPlusCount > 0) {
+        addBet = this.betCount * (BET_VALUE + 1)
+      } else {
+        addBet = this.betCount * BET_VALUE
+      }
+      this.betValue = addBet
+      this.betNumText.setText('Bet: ' + this.betValue)
+
+      //持ちコイン更新
+      this.coinNum = this.coinNum - BET_VALUE
       this.coinNumText.setText('COIN: ' + this.coinNum)
 
       if (this.betCount == 1) {
-        this.slotChargeButton1.setTexture(TextureKey.SlotButtonD)
+        this.betLamps[2].addCount()
       } else if (this.betCount == 2) {
-        this.slotChargeButton2.setTexture(TextureKey.SlotButtonD)
+        this.betLamps[1].addCount()
       } else if (this.betCount == 3) {
-        this.slotChargeButton3.setTexture(TextureKey.SlotButtonD)
+        this.betLamps[0].addCount()
       }
     }
   }
@@ -285,59 +460,44 @@ export class SlotScene extends Scene {
   /**
    * リール回転開始
    */
-  private startReel() {
+  private async startReel() {
+    for (let i = 0; i < SLOT_REEL_NUM; i++) {
+      this.slotReels[i].init(this)
+    }
+
+    await delayPromise(this, 300)
     this.isStartReel = true
-    if (this.isReplay) {
-      this.isReplay = false
-    }
-  }
-
-  /**
-   * リール回転停止
-   */
-  private stopReel(reelNumber: number) {
-    switch (reelNumber) {
-      case REEL_NUMBER.LEFT:
-        this.isStopNumber1 = true
-        this.slotResult(this.slotMachineNumber1)
-        break
-
-      case REEL_NUMBER.CENTER:
-        this.isStopNumber2 = true
-        this.slotResult(this.slotMachineNumber2)
-        break
-
-      case REEL_NUMBER.RIGHT:
-        this.isStopNumber3 = true
-        this.slotResult(this.slotMachineNumber3)
-        break
-    }
+    this.isReplay = false
+    this.assist_count--
+    this.updateReelCount()
   }
 
   /**
    * スロット結果処理
    * @param object
    */
-  private slotResult(object: GameObjects.Image) {
-    this.stopAnimation(object)
-    if (this.isStopNumber1 && this.isStopNumber2 && this.isStopNumber3) {
-      if (
-        this.saveStopNumber1 &&
-        this.saveStopNumber2 &&
-        this.saveStopNumber3 &&
-        this.saveStopNumber
-      ) {
-        const addCoin = calcSlotHand(
-          this.saveStopNumber1,
-          this.saveStopNumber2,
-          this.saveStopNumber3
-        )
-        if (addCoin > 0) {
-          this.calcSpecialHands(addCoin)
-        }
+  private slotResult() {
+    if (
+      this.slotReels[0].getIsStop() &&
+      this.slotReels[1].getIsStop() &&
+      this.slotReels[2].getIsStop()
+    ) {
+      if (this.isBonusMax) {
+        this.bonusModeCountDowner()
+      } else {
+        this.bonusCharger()
       }
+      this.bonusImageManager()
+      const addCoin = calcSlotHand(
+        this.slotReels[0].getStopNumber(),
+        this.slotReels[1].getStopNumber(),
+        this.slotReels[2].getStopNumber()
+      )
+      if (addCoin > 0) {
+        this.calcSpecialHands(addCoin)
+      }
+      this.initSlot()
     }
-    this.initSlot()
   }
 
   /**
@@ -349,50 +509,34 @@ export class SlotScene extends Scene {
       case SPECIAL_HANDS.REPLAY:
         //リプレイ
         this.isReplay = true
-        this.betCount = 3
-        this.betNumText.setText('Bet: ' + this.betCount * 2)
-        this.slotChargeButton1.setTexture(TextureKey.SlotButtonD)
-        this.slotChargeButton2.setTexture(TextureKey.SlotButtonD)
-        this.slotChargeButton3.setTexture(TextureKey.SlotButtonD)
+        for (let i = 0; i < MAX_SLOT_BET; i++) {
+          this.betLamps[i].setImage(1)
+        }
         break
 
       case SPECIAL_HANDS.DOUBLE_UP:
-        //ダブルアップチャンス
-        this.doubleUpChanceCount = this.doubleUpChanceCount + ADD_DOUBLE_UP_CHANCE
+        //ダブルアップ
+        this.doubleUpCount = this.doubleUpCount + ADD_DOUBLE_UP
+        break
+      case SPECIAL_HANDS.BET_PLUS:
+        //BET量加算
+        this.betPlusCount = this.betPlusCount + ADD_BET_PLUS
         break
 
       default:
         let newCoinNum = 0
-        if (this.doubleUpChanceCount > 0) {
-          this.addCoinNum = hand * 2
+        const getCoin = hand * this.betValue
+        if (this.doubleUpCount > 0) {
+          this.addCoinNum = getCoin * 2
           newCoinNum = this.coinNum + this.addCoinNum
         } else {
-          this.addCoinNum = hand
+          this.addCoinNum = getCoin
           newCoinNum = this.coinNum + this.addCoinNum
         }
 
         this.addCoinAnimation(newCoinNum)
         break
     }
-  }
-
-  /**
-   * ストップアニメーション
-   * @param object
-   */
-  private stopAnimation(object: GameObjects.Image) {
-    this.tweens.add({
-      targets: object,
-      scale: 1.8,
-      duration: 100,
-      onComplete: () => {
-        this.tweens.add({
-          targets: object,
-          scale: 1.5,
-          duration: 100
-        })
-      }
-    })
   }
 
   /**
@@ -403,12 +547,13 @@ export class SlotScene extends Scene {
     this.addCoinText.setText('+ ' + this.addCoinNum)
     this.tweens.add({
       targets: this.addCoinText,
-      y: 100,
+      y: 140,
       alpha: 1,
       duration: 300,
       onComplete: async () => {
         await delayPromise(this, 700)
         this.addCoinText.setAlpha(0)
+        this.addCoinText.setY(120)
       }
     })
     let oldValue = this.coinNum
@@ -430,69 +575,146 @@ export class SlotScene extends Scene {
         this.coinNumText.setPosition(COIN_NUM_POS_X, COIN_NUM_POS_Y)
       }
     })
-    while (oldValue !== newCoin) {
-      oldValue = oldValue + addValue
-      await delayPromise(this, duration)
-      this.coinNumText.setText('COIN: ' + oldValue)
-    }
     this.coinNum = newCoin
+    let addCoinNum = 0
+    while (oldValue !== newCoin) {
+      addCoinNum += addValue
+      if (addCoinNum < 50) {
+        oldValue = oldValue + addValue
+        await delayPromise(this, duration)
+        this.coinNumText.setText('COIN: ' + oldValue)
+      } else {
+        this.coinNumText.setText('COIN: ' + this.coinNum)
+        break
+      }
+    }
+  }
+
+  /**
+   * ボーナスのチャージ処理
+   */
+  private bonusCharger() {
+    if (
+      isEvenNumber(
+        this.slotReels[0].getStopNumber(),
+        this.slotReels[1].getStopNumber(),
+        this.slotReels[2].getStopNumber()
+      )
+    ) {
+      this.bonusCount++
+      if (this.bonusCount > MAX_BONUS_STAR) {
+        this.bonusCount = 5
+        this.isBonusMax = true
+      }
+    } else {
+      this.bonusCount--
+      if (this.bonusCount < 0) {
+        this.bonusCount = 0
+      }
+    }
+  }
+
+  /**
+   * ボーナスモードのカウント処理
+   */
+  private bonusModeCountDowner() {
+    this.bonusCount--
+    if (this.bonusCount == 0) {
+      this.isBonusMax = false
+    }
+  }
+
+  /**
+   * ボーナスの画像更新処理
+   */
+  private bonusImageManager() {
+    if (this.isBonusMax) {
+      for (let i = 0; i < MAX_BONUS_STAR; i++) {
+        if (i < this.bonusCount) {
+          this.bonusStars[i].setImage(2)
+        } else {
+          this.bonusStars[i].setImage(0)
+        }
+      }
+    } else {
+      for (let i = 0; i < MAX_BONUS_STAR; i++) {
+        if (i < this.bonusCount) {
+          this.bonusStars[i].setImage(1)
+        } else {
+          this.bonusStars[i].setImage(0)
+        }
+      }
+    }
+  }
+
+  /**
+   * 回転数更新
+   */
+  private updateReelCount() {
+    this.reel_count++
+    if (this.reel_count > MAX_REEL_COUNT) {
+      this.reel_count = 0
+    }
+    this.reelCountText.setText(`${this.reel_count}`)
   }
 
   /**
    * スロット初期化
    */
   private initSlot() {
-    if (this.isStopNumber1 && this.isStopNumber2 && this.isStopNumber3) {
+    if (
+      this.slotReels[0].getIsStop() &&
+      this.slotReels[1].getIsStop() &&
+      this.slotReels[2].getIsStop()
+    ) {
       this.time.delayedCall(500, () => {
         if (!this.isReplay) {
-          this.slotChargeButton1.setTexture(TextureKey.SlotButtonC)
-          this.slotChargeButton2.setTexture(TextureKey.SlotButtonC)
-          this.slotChargeButton3.setTexture(TextureKey.SlotButtonC)
+          for (let i = 0; i < MAX_SLOT_BET; i++) {
+            this.betLamps[i].setInit()
+          }
           this.betCount = 0
+          this.betValue = 0
           this.isBet = false
           this.addCoinNum = 0
           this.betNumText.setText('Bet: ' + this.betCount)
         }
 
-        this.isStopNumber1 = false
-        this.isStopNumber2 = false
-        this.isStopNumber3 = false
+        this.slotStartButton.activeButton()
         this.isStartReel = false
-        this.saveStopNumber = null
-        this.saveStopNumber1 = null
-        this.saveStopNumber2 = null
-        this.saveStopNumber3 = null
 
-        this.doubleUpChanceCount = this.doubleUpChanceCount - 1
-        if (this.doubleUpChanceCount < 0) {
-          this.doubleUpChanceCount = 0
-          this.doubleUpChanceNumText.setText('× ' + this.doubleUpChanceCount)
-        } else {
-          this.doubleUpChanceNumText.setText('× ' + this.doubleUpChanceCount)
+        //ダブルアップのカウント減算
+        if (this.doubleUpCount > 0) {
+          this.doubleUpCount = this.doubleUpCount - 1
+          if (this.doubleUpCount < 0) {
+            this.doubleUpCount = 0
+          }
         }
+
+        //ベットプラスカウント減算
+        if (this.betPlusCount > 0) {
+          this.betPlusCount = this.betPlusCount - 1
+          if (this.betPlusCount < 0) {
+            this.betPlusCount = 0
+          }
+        }
+
+        if (this.assist_count <= 0) {
+          this.initAssistCountRange()
+        }
+
+        this.doubleUpNumText.setText('× ' + this.doubleUpCount)
+        this.betPlusNumText.setText('× ' + this.betPlusCount)
       })
     }
   }
 
   /**
-   * ベット量に合わせた期待値の操作
-   * @param saveNumber
-   * @returns
+   * 回転数初期化
    */
-  private expectedValue(saveNumber: number): number {
-    if (this.saveStopNumber == null) {
-      this.saveStopNumber = saveNumber
-    }
-
-    if (this.betCount == 2) {
-      if (Math.floor(Math.random() * 3) === 0) {
-        return this.saveStopNumber
-      }
-    } else if (this.betCount == 3) {
-      if (Math.floor(Math.random() * 2) === 0) {
-        return this.saveStopNumber
-      }
-    }
-    return saveNumber
+  private initAssistCountRange() {
+    const assist_count_range = generateRandomInt(1, 10)
+    this.assist_count = oneInNChance(2)
+      ? ASSIST_COUNT - assist_count_range
+      : ASSIST_COUNT + assist_count_range
   }
 }

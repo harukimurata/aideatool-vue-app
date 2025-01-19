@@ -33,18 +33,17 @@ export class Preloader extends Scene {
 
     this.load.image(TextureKey.HeightCheck, '/heightCheck.png')
     this.load.image(TextureKey.SlotBG, 'image/slot/slot_bg.png')
-    this.load.image(TextureKey.SlotMachineOver, 'image/slot/slot_machine_over.png')
-    this.load.image(TextureKey.SlotMachineUnder, 'image/slot/slot_machine_under.png')
+    this.load.image(TextureKey.SlotMachineOver, 'image/slot/slot_machine_over-02.png')
+    this.load.image(TextureKey.SlotMachineUnder, 'image/slot/slot_machine_under-01.png')
+    this.load.image(TextureKey.SlotTitle, 'image/slot/slot_title_0.png')
     this.load.image(TextureKey.SlotStartA, 'image/slot/button/slot_start_a.png')
     this.load.image(TextureKey.SlotStartB, 'image/slot/button/slot_start_b.png')
     this.load.image(TextureKey.SlotBetA, 'image/slot/button/bet_button_a.png')
     this.load.image(TextureKey.SlotBetB, 'image/slot/button/bet_button_b.png')
+    this.load.image(TextureKey.SlotBetLumpA, 'image/slot/button/bet_lump_a2.png')
+    this.load.image(TextureKey.SlotBetLumpB, 'image/slot/button/bet_lump_b2.png')
     this.load.image(TextureKey.SlotButtonA, 'image/slot/button/slot_button_a.png')
     this.load.image(TextureKey.SlotButtonB, 'image/slot/button/slot_button_b.png')
-    this.load.image(TextureKey.SlotButtonC, 'image/slot/button/slot_button_c.png')
-    this.load.image(TextureKey.SlotButtonD, 'image/slot/button/slot_button_d.png')
-    this.load.image(TextureKey.SlotButtonE, 'image/slot/button/slot_button_e.png')
-    this.load.image(TextureKey.SlotButtonF, 'image/slot/button/slot_button_f.png')
     this.load.image(TextureKey.SlotNumber0, 'image/slot/number/slot_number_0.png')
     this.load.image(TextureKey.SlotNumber1, 'image/slot/number/slot_number_1.png')
     this.load.image(TextureKey.SlotNumber2, 'image/slot/number/slot_number_2.png')
@@ -58,7 +57,11 @@ export class Preloader extends Scene {
     this.load.image(TextureKey.SlotReplay, 'image/slot/number/replay.png')
     this.load.image(TextureKey.DoubleUp, 'image/slot/number/double_up.png')
     this.load.image(TextureKey.DoubleUpIconA, 'image/slot/button/double_up_icon_a.png')
-    this.load.image(TextureKey.DoubleUpIconB, 'image/slot/button/double_up_icon_b.png')
+    this.load.image(TextureKey.BetPlus, 'image/slot/number/bet_plus.png')
+    this.load.image(TextureKey.BetPlusIcon, 'image/slot/button/bet_plus_icon.png')
+    this.load.image(TextureKey.SlotStarA, 'image/slot/button/star_a.png')
+    this.load.image(TextureKey.SlotStarB, 'image/slot/button/star_b.png')
+    this.load.image(TextureKey.SlotStarC, 'image/slot/button/star_c.png')
     this.load.image(TextureKey.NengaBase, 'image/nenga2025/base.png')
     this.load.image(TextureKey.NengaSnake, 'image/nenga2025/animal/snake.png')
     this.load.image(TextureKey.NengaHose, 'image/nenga2025/animal/hose.png')
@@ -78,6 +81,6 @@ export class Preloader extends Scene {
     //  For example, you can define global animations here, so we can use them in other scenes.
 
     //  Move to the MainMenu. You could also swap this for a Scene Transition, such as a camera fade.
-    this.scene.start(SceneKey.ScratchScene)
+    this.scene.start(SceneKey.SlotScene)
   }
 }
