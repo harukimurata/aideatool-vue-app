@@ -1,15 +1,17 @@
 import { GameObjects, Scene } from 'phaser'
 
 import { EventBus } from '../EventBus'
-import SceneKey from '../const/SceneKey'
-import TextureKey from '../const/TextureKey'
 import ImageButton from '../components/ImageButton'
-import SlotReelNumber from '../components/SlotReelNumber'
 import ImageManager from '../components/ImageManager'
-import { calcSlotHand } from '../logic/slot'
-import { isEvenNumber, oneInNChance, generateRandomInt } from '../utils'
-import { delayPromise } from '../helper'
+import KeyBoardManager from '../components/KeyBoardManager'
+import SlotReelNumber from '../components/SlotReelNumber'
+import KeyCodes from '../const/KeyCode'
+import SceneKey from '../const/SceneKey'
 import { SPECIAL_HANDS } from '../const/SlotHand'
+import TextureKey from '../const/TextureKey'
+import { delayPromise } from '../helper'
+import { calcSlotHand } from '../logic/slot'
+import { generateRandomInt, isEvenNumber, oneInNChance } from '../utils'
 
 const MAX_REEL_COUNT = 999
 const ASSIST_COUNT = 30
@@ -43,6 +45,7 @@ const COIN_NUM_POS_Y = 175
 const REEL_COUNT_POS_X = 515
 const REEL_COUNT_POS_Y = 80
 const SLOT_MACHINE_NUMBER_Y_POS = 85
+const KEY_SUPPORT_POS_Y = 475
 
 export class SlotScene extends Scene {
   gameWidth!: number
@@ -70,6 +73,12 @@ export class SlotScene extends Scene {
 
   slotReels: SlotReelNumber[] = []
   slotStopButtons: ImageButton[] = []
+
+  keyD!: KeyBoardManager
+  keyG!: KeyBoardManager
+  keyK!: KeyBoardManager
+  keySPACE!: KeyBoardManager
+  keyENTER!: KeyBoardManager
 
   private reel_count = 0
   private assist_count = 0
@@ -258,9 +267,7 @@ export class SlotScene extends Scene {
       TextureKey.SlotBetA,
       TextureKey.SlotBetB,
       () => {
-        if (!this.isStartReel && this.coinNum > 0) {
-          this.slotBet()
-        }
+        this.onBet()
       }
     ).setScale(0.6)
     this.add.existing(this.slotBetButton)
@@ -272,10 +279,7 @@ export class SlotScene extends Scene {
       TextureKey.SlotStartA,
       TextureKey.SlotStartB,
       () => {
-        if (!this.isStartReel && this.betCount >= 1) {
-          this.slotStartButton.inactiveButton()
-          this.startReel()
-        }
+        this.onStartReel()
       }
     ).setScale(0.7)
     this.add.existing(this.slotStartButton)
@@ -288,32 +292,81 @@ export class SlotScene extends Scene {
         TextureKey.SlotButtonA,
         TextureKey.SlotButtonB,
         () => {
-          if (this.isStartReel && !this.slotReels[i].getIsStop()) {
-            this.slotReels[i].setIsStop(true)
-
-            if (this.isBonusMax) {
-              this.slotReels[i].setBonusNumber()
-            } else {
-              if (this.assist_count <= 0) {
-                this.slotReels[i].setBonusNumber()
-              }
-            }
-
-            this.slotResult()
-            this.slotReels[i].stopAnimation(this)
-          }
+          this.onStopReel(i)
         }
       ).setScale(0.9)
       this.add.existing(this.slotStopButtons[i])
     }
 
+    this.add.text(55, KEY_SUPPORT_POS_Y, 'Space', {
+      fontFamily: 'Cambria',
+      fontSize: 18,
+      color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 8
+    })
+
+    this.add.text(170, KEY_SUPPORT_POS_Y + 5, 'D', {
+      fontFamily: 'Cambria',
+      fontSize: 18,
+      color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 8
+    })
+
+    this.add.text(290, KEY_SUPPORT_POS_Y + 5, 'G', {
+      fontFamily: 'Cambria',
+      fontSize: 18,
+      color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 8
+    })
+
+    this.add.text(410, KEY_SUPPORT_POS_Y + 5, 'K', {
+      fontFamily: 'Cambria',
+      fontSize: 18,
+      color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 8
+    })
+
+    this.add.text(495, KEY_SUPPORT_POS_Y + 5, 'Enter', {
+      fontFamily: 'Cambria',
+      fontSize: 18,
+      color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 8
+    })
+
     EventBus.emit('current-scene-ready', this)
+
+    this.keyD = new KeyBoardManager(this, KeyCodes.D, () => {
+      this.onStopReel(0)
+    })
+    this.keyG = new KeyBoardManager(this, KeyCodes.G, () => {
+      this.onStopReel(1)
+    })
+    this.keyK = new KeyBoardManager(this, KeyCodes.K, () => {
+      this.onStopReel(2)
+    })
+    this.keySPACE = new KeyBoardManager(this, KeyCodes.SPACE, () => {
+      this.onBet()
+    })
+    this.keyENTER = new KeyBoardManager(this, KeyCodes.ENTER, () => {
+      this.onStartReel()
+    })
 
     this.initAssistCountRange()
     this.initSlot()
     for (let i = 0; i < SLOT_REEL_NUM; i++) {
       this.slotReels[i].init(this)
     }
+
+    this.keyD.setIsFunction(true)
+    this.keyG.setIsFunction(true)
+    this.keyK.setIsFunction(true)
+    this.keySPACE.setIsFunction(true)
+    this.keyENTER.setIsFunction(true)
   }
 
   /**
@@ -329,10 +382,49 @@ export class SlotScene extends Scene {
       }
     }
 
+    this.keyD.down()
+    this.keyG.down()
+    this.keyK.down()
+    this.keySPACE.down()
+    this.keyENTER.down()
+
     if (this.isStartReel) {
       this.slotReels[0].update(delta)
       this.slotReels[1].update(delta)
       this.slotReels[2].update(delta)
+    }
+  }
+
+  //ベット処理
+  private onBet() {
+    if (!this.isStartReel && this.coinNum > 0) {
+      this.slotBet()
+    }
+  }
+
+  //リールスタート処理
+  private onStartReel() {
+    if (!this.isStartReel && this.betCount >= 1) {
+      this.slotStartButton.inactiveButton()
+      this.startReel()
+    }
+  }
+
+  //リールストップ処理
+  private onStopReel(reelNumber: number) {
+    if (this.isStartReel && !this.slotReels[reelNumber].getIsStop()) {
+      this.slotReels[reelNumber].setIsStop(true)
+
+      if (this.isBonusMax) {
+        this.slotReels[reelNumber].setBonusNumber()
+      } else {
+        if (this.assist_count <= 0) {
+          this.slotReels[reelNumber].setBonusNumber()
+        }
+      }
+
+      this.slotResult()
+      this.slotReels[reelNumber].stopAnimation(this)
     }
   }
 
