@@ -33,6 +33,16 @@
       </button>
     </div>
   </div>
+  <div class="columns is-mobile is-centered">
+    <div class="column is-one-quarter px-1">
+      <button
+        class="button is-fullwidth has-text-success has-text-weight-bold"
+        @click="toLink('RestaurantList')"
+      >
+        一覧
+      </button>
+    </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
