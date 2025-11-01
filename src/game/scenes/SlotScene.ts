@@ -6,7 +6,7 @@ import ImageManager from '../components/ImageManager'
 import KeyBoardManager from '../components/KeyBoardManager'
 import SlotReelNumber from '../components/SlotReelNumber'
 import KeyCodes from '../const/KeyCode'
-import SceneKey from '../const/SceneKey'
+import { SceneKey, SceneKeyIndex } from '../const/SceneKey'
 import { SPECIAL_HANDS } from '../const/SlotHand'
 import TextureKey from '../const/TextureKey'
 import { delayPromise } from '../helper'
@@ -95,7 +95,7 @@ export class SlotScene extends Scene {
   private isReplay = false
 
   constructor() {
-    super(SceneKey.SlotScene)
+    super(SceneKey[SceneKeyIndex.SlotScene].scene_name)
   }
 
   /**
