@@ -1,4 +1,5 @@
 enum TextureKey {
+  DefaultBg = 'defaultBg',
   HeightCheck = 'heightCheck',
   SlotBG = 'slot_bg',
   PushButton = 'pushButton',

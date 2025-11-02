@@ -31,6 +31,9 @@ export class Preloader extends Scene {
     //  Load the assets for the game - Replace with your own assets
     this.load.setPath('assets')
 
+    this.load.image(TextureKey.DefaultBg, '/defaultBg.png')
+
+    //スロット関連画像
     this.load.image(TextureKey.HeightCheck, '/heightCheck.png')
     this.load.image(TextureKey.SlotBG, 'image/slot/slot_bg.png')
     this.load.image(TextureKey.SlotMachineOver, 'image/slot/slot_machine_over-02.png')
@@ -62,6 +65,8 @@ export class Preloader extends Scene {
     this.load.image(TextureKey.SlotStarA, 'image/slot/button/star_a.png')
     this.load.image(TextureKey.SlotStarB, 'image/slot/button/star_b.png')
     this.load.image(TextureKey.SlotStarC, 'image/slot/button/star_c.png')
+
+    //年賀状2025関連画像
     this.load.image(TextureKey.NengaBase, 'image/nenga2025/base.png')
     this.load.image(TextureKey.NengaSnake, 'image/nenga2025/animal/snake.png')
     this.load.image(TextureKey.NengaHose, 'image/nenga2025/animal/hose.png')
@@ -81,6 +86,6 @@ export class Preloader extends Scene {
     //  For example, you can define global animations here, so we can use them in other scenes.
 
     //  Move to the MainMenu. You could also swap this for a Scene Transition, such as a camera fade.
-    this.scene.start(SceneKey[SceneKeyIndex.SlotScene].scene_name)
+    this.scene.start(SceneKey[SceneKeyIndex.PinpointShooterScene].scene_name)
   }
 }
