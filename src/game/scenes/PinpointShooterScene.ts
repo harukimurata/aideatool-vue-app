@@ -7,6 +7,7 @@ import ImageButton from '../components/ImageButton'
 import DebugTexts from '../components/DebugTexts'
 import {
   type ArrowState,
+  type MoveState,
   arrowInitialVelocity,
   stepAirResistanceArrowFlight
 } from '../logic/physics'
@@ -19,8 +20,8 @@ const START_ARROW_HEIGHT = 1.5 // m
 const AIR_RESISTANCE_COEFFICIENT = 1.0 // 空気抵抗係数
 const ARROW_CROSS_SECTIONAL_AREA = 0.0005 // m^2
 const AIR_DENSITY = 1.225 // kg/m^3
-const GRAVITY = 9.8 // m/s^2
 const MOVE_SPEED = 45 // km/h
+const GRAVITY = 9.8 // m/s^2
 
 export class PinpointShooterScene extends Scene {
   // ゲーム内時間
@@ -37,10 +38,14 @@ export class PinpointShooterScene extends Scene {
   slotResetButton!: ImageButton
   slotPauseButton!: ImageButton
 
+  moveState: MoveState = { z: 0, x: MOVE_SPEED / 3.6, y: 0 }
+
   arrowState: ArrowState = {
     z: 0,
+    x: 0,
     y: START_ARROW_HEIGHT,
     vz: 0,
+    vx: 0,
     vy: 0
   }
 
@@ -95,9 +100,11 @@ export class PinpointShooterScene extends Scene {
     this.initArrowState()
     this.debugTexts.replaceVariable(
       1,
-      `z: ${this.arrowState.z.toFixed(2)}, y: ${this.arrowState.y.toFixed(
+      `z: ${this.arrowState.z.toFixed(2)}, x: ${this.arrowState.x.toFixed(
         2
-      )}, vz: ${this.arrowState.vz.toFixed(2)}, vy: ${this.arrowState.vy.toFixed(2)}`
+      )}, y: ${this.arrowState.y.toFixed(2)}, vz: ${this.arrowState.vz.toFixed(
+        2
+      )}, vx: ${this.arrowState.vz.toFixed(2)}, vy: ${this.arrowState.vy.toFixed(2)}`
     )
   }
 
@@ -115,14 +122,18 @@ export class PinpointShooterScene extends Scene {
 
       this.debugTexts.replaceVariable(
         1,
-        `z: ${this.arrowState.z.toFixed(2)}, y: ${this.arrowState.y.toFixed(
+        `z: ${this.arrowState.z.toFixed(2)}, x: ${this.arrowState.x.toFixed(
           2
-        )}, vz: ${this.arrowState.vz.toFixed(2)}, vy: ${this.arrowState.vy.toFixed(2)}`
+        )}, y: ${this.arrowState.y.toFixed(2)}, vz: ${this.arrowState.vz.toFixed(
+          2
+        )}, vx: ${this.arrowState.vz.toFixed(2)}, vy: ${this.arrowState.vy.toFixed(2)}`
       )
 
       this.debugTexts.replaceVariable(
         2,
-        `z: ${(this.arrowState.z * 10).toFixed(2)}, y: ${(this.arrowState.y * 10).toFixed(2)}`
+        `z: ${(this.arrowState.z * 10).toFixed(2)}, x: ${(this.arrowState.x * 10).toFixed(
+          2
+        )}, y: ${(this.arrowState.y * 10).toFixed(2)}`
       )
 
       if (this.arrowState.y <= 0) {
@@ -135,14 +146,24 @@ export class PinpointShooterScene extends Scene {
     this.initArrowState()
     this.debugTexts.replaceVariable(
       1,
-      `z: ${this.arrowState.z.toFixed(2)}, y: ${this.arrowState.y.toFixed(
+      `z: ${this.arrowState.z.toFixed(2)}, x: ${this.arrowState.x.toFixed(
         2
-      )}, vz: ${this.arrowState.vz.toFixed(2)}, vy: ${this.arrowState.vy.toFixed(2)}`
+      )}, y: ${this.arrowState.y.toFixed(2)}, vz: ${this.arrowState.vz.toFixed(
+        2
+      )}, vx: ${this.arrowState.vz.toFixed(2)}, vy: ${this.arrowState.vy.toFixed(2)}`
+    )
+
+    this.debugTexts.replaceVariable(
+      2,
+      `z: ${(this.arrowState.z * 10).toFixed(2)}, x: ${(this.arrowState.x * 10).toFixed(2)}, y: ${(
+        this.arrowState.y * 10
+      ).toFixed(2)}`
     )
   }
 
   private start() {
     this.stop = true
+    this.arrowState.vx = this.moveState.x
   }
 
   /**
@@ -154,10 +175,10 @@ export class PinpointShooterScene extends Scene {
     const theta = (SHOOTING_ANGLE_DEG * Math.PI) / 180
 
     this.arrowState.z = 0
+    this.arrowState.x = 0
     this.arrowState.y = START_ARROW_HEIGHT
     this.arrowState.vz = v_0 * Math.cos(theta)
+    this.arrowState.vx = 0
     this.arrowState.vy = v_0 * Math.sin(theta)
-
-    console.log(this.arrowState)
   }
 }

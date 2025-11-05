@@ -4,9 +4,17 @@ const STEP_TIME = 0.001 // 計算刻み時間 s
 // 状態を保持する構造体
 export interface ArrowState {
   z: number // 飛距離 [m]
+  x: number // 水平距離 [m]
   y: number // 高度 [m]
-  vz: number // 水平方向速度 [m/s]
+  vz: number // 飛距離速度 [m/s]
+  vx: number // 水平距離速度 [m/s]
   vy: number // 鉛直方向速度 [m/s]
+}
+
+export interface MoveState {
+  z: number // 前後移動距離 [m]
+  x: number // 左右移動距離 [m]
+  y: number // 上下移動距離 [m]
 }
 
 /**
@@ -93,12 +101,12 @@ export function resistanceAcceleration(Fd: number, m: number, d: number, v: numb
 
 /**
  * 空気抵抗を考慮した矢の飛行状態の1ステップ進行
- * @param state {z, y, vz, vy} 矢の状態
+ * @param state {z, y, x, vz, vx, vy} 矢の状態
  * @param m // 矢の重さ
  * @param cd // 空気抵抗係数
  * @param csa // 矢の断面積
  * @param ad // 空気の密度
- * @returns {z, y, vz, vy} 矢の状態
+ * @returns {z, y, x, vz, vy} 矢の状態
  */
 export function stepAirResistanceArrowFlight(
   state: ArrowState,
@@ -106,25 +114,35 @@ export function stepAirResistanceArrowFlight(
   cd: number,
   csa: number,
   ad: number,
-  dt: number = STEP_TIME
+  dt: number = STEP_TIME,
+  moveState: MoveState = { z: 0, x: 0, y: 0 }
 ): ArrowState {
-  const { z, y, vz, vy } = state
+  const { z, y, x, vz, vx, vy } = state
 
-  const v = Math.sqrt(vz * vz + vy * vy) // 速度の大きさ
+  const relVx = vx - moveState.x
+  const relVy = vy - moveState.y
+  const relVz = vz - moveState.z
+  const v = Math.sqrt(relVx * relVx + relVy * relVy + relVz * relVz)
+
   const Fd = airResistance(cd, csa, ad, v) // 空気抵抗
-  const ax = resistanceAcceleration(Fd, m, vz, v) // 抗力によるz方向加速度
+  const az = resistanceAcceleration(Fd, m, vz, v) // 抗力によるz方向加速度
+  const ax = resistanceAcceleration(Fd, m, vx, v) // 抗力によるx方向加速度
   const ay = resistanceAcceleration(Fd, m, vy, v) - GRAVITY // 抗力＋重力によるy方向加速度
 
   // 次ステップの速度と位置
-  const newVz = vz + ax * dt
+  const newVz = vz + az * dt
+  const newVx = vx + ax * dt
   const newVy = vy + ay * dt
   const newZ = z + newVz * dt
+  const newX = x + newVx * dt
   const newY = y + newVy * dt
 
   return {
     z: newZ,
+    x: newX,
     y: Math.max(0, newY), // 地面以下は0に固定
     vz: newVz,
+    vx: newVx,
     vy: newVy
   }
 }
