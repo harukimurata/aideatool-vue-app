@@ -5,6 +5,7 @@ import { SceneKey, SceneKeyIndex } from '../const/SceneKey'
 import TextureKey from '../const/TextureKey'
 import ImageButton from '../components/ImageButton'
 import DebugTexts from '../components/DebugTexts'
+import { is3DBoxCollision } from '../logic/collision'
 import {
   type ArrowState,
   type MoveState,
@@ -13,15 +14,25 @@ import {
 } from '../logic/physics'
 
 const BOW_SPRING_CONSTANT = 300 // N/m
+const ARROW_HEAD_SIZE = 0.03 // m
 const ARROW_MASS = 0.05 // kg
 const BOW_DRAW_DISTANCE = 0.5 // m 変数で決めるようにする
-const SHOOTING_ANGLE_DEG = 45 // degrees 変数で決めるようにする
+const SHOOTING_ANGLE_DEG = 8 // degrees 変数で決めるようにする
 const START_ARROW_HEIGHT = 1.5 // m
 const AIR_RESISTANCE_COEFFICIENT = 1.0 // 空気抵抗係数
 const ARROW_CROSS_SECTIONAL_AREA = 0.0005 // m^2
 const AIR_DENSITY = 1.225 // kg/m^3
-const MOVE_SPEED = 45 // km/h
+const MOVE_SPEED_X = 0 // km/h
 const GRAVITY = 9.8 // m/s^2
+const POINT_GRAPH_SCALE = 6 // グラフのスケール
+const PARABOLA_GRAPH_BASE_X = 50 // グラフの基準Y座標
+const PARABOLA_GRAPH_BASE_Y = 150 // グラフの基準Y座標
+const TARGET_POS_Z = 38 // m
+const TARGET_POS_X = 0 // m
+const TARGET_POS_Y = 1 // m
+const TARGET_SIZE_W = 0.6 // m
+const TARGET_SIZE_H = 0.6 // m
+const TARGET_SIZE_D = 0.1 // m
 
 export class PinpointShooterScene extends Scene {
   // ゲーム内時間
@@ -38,8 +49,7 @@ export class PinpointShooterScene extends Scene {
   slotResetButton!: ImageButton
   slotPauseButton!: ImageButton
 
-  moveState: MoveState = { z: 0, x: MOVE_SPEED / 3.6, y: 0 }
-
+  // 矢の状態
   arrowState: ArrowState = {
     z: 0,
     x: 0,
@@ -48,6 +58,17 @@ export class PinpointShooterScene extends Scene {
     vx: 0,
     vy: 0
   }
+  // 移動状態
+  moveState: MoveState = { z: 0, x: MOVE_SPEED_X / 3.6, y: 0 }
+
+  arrowMoveParabolaGraph!: GameObjects.Graphics
+
+  targetPosition = {
+    z: TARGET_POS_Z,
+    x: TARGET_POS_X,
+    y: TARGET_POS_Y
+  }
+  isTargetHit = false
 
   constructor() {
     super(SceneKey[SceneKeyIndex.PinpointShooterScene].scene_name)
@@ -69,7 +90,9 @@ export class PinpointShooterScene extends Scene {
     this.debugTexts.init(this, [
       'Pinpoint Shooter Scene',
       'arrowFlightDistance: {1}',
-      'px arrowFlightDistance: {1}'
+      'px arrowFlightDistance: {1}',
+      `Target z:${TARGET_POS_Z}, x:${TARGET_POS_X}, y:${TARGET_POS_Y}`,
+      'Target is : {1}'
     ])
 
     this.slotResetButton = new ImageButton(
@@ -106,6 +129,15 @@ export class PinpointShooterScene extends Scene {
         2
       )}, vx: ${this.arrowState.vz.toFixed(2)}, vy: ${this.arrowState.vy.toFixed(2)}`
     )
+
+    this.arrowMoveParabolaGraph = this.add.graphics()
+    this.arrowMoveParabolaGraph.clear()
+    this.arrowMoveParabolaGraph.lineStyle(2, 0xff0000, 1)
+
+    this.arrowMoveParabolaGraph.moveTo(
+      PARABOLA_GRAPH_BASE_X + this.arrowState.z * POINT_GRAPH_SCALE,
+      PARABOLA_GRAPH_BASE_Y - this.arrowState.y * POINT_GRAPH_SCALE
+    )
   }
 
   update(time: number, delta: number): void {
@@ -136,8 +168,41 @@ export class PinpointShooterScene extends Scene {
         )}, y: ${(this.arrowState.y * 10).toFixed(2)}`
       )
 
+      this.arrowMoveParabolaGraph.lineTo(
+        PARABOLA_GRAPH_BASE_X + this.arrowState.z * POINT_GRAPH_SCALE,
+        PARABOLA_GRAPH_BASE_Y - this.arrowState.y * POINT_GRAPH_SCALE
+      )
+      this.arrowMoveParabolaGraph.strokePath()
+
+      if (
+        !this.isTargetHit &&
+        is3DBoxCollision(
+          {
+            x: this.arrowState.x - ARROW_HEAD_SIZE / 2,
+            y: this.arrowState.y - ARROW_HEAD_SIZE / 2,
+            z: this.arrowState.z - ARROW_HEAD_SIZE / 2,
+            width: ARROW_HEAD_SIZE,
+            height: ARROW_HEAD_SIZE,
+            depth: ARROW_HEAD_SIZE
+          },
+          {
+            x: this.targetPosition.x - TARGET_SIZE_W / 2,
+            y: this.targetPosition.y - TARGET_SIZE_H / 2,
+            z: this.targetPosition.z - TARGET_SIZE_D / 2,
+            width: TARGET_SIZE_W,
+            height: TARGET_SIZE_H,
+            depth: TARGET_SIZE_D
+          }
+        )
+      ) {
+        this.isTargetHit = true
+        this.stop = false
+        this.debugTexts.replaceVariable(4, 'HIT!!!!')
+      }
+
       if (this.arrowState.y <= 0) {
         this.stop = false
+        this.debugTexts.replaceVariable(4, 'Failure')
       }
     }
   }
@@ -159,6 +224,12 @@ export class PinpointShooterScene extends Scene {
         this.arrowState.y * 10
       ).toFixed(2)}`
     )
+
+    this.arrowMoveParabolaGraph.clear()
+    this.arrowMoveParabolaGraph.lineStyle(2, 0xff0000, 1)
+
+    this.isTargetHit = false
+    this.debugTexts.replaceVariable(4, '')
   }
 
   private start() {
