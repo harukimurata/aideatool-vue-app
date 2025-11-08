@@ -24,7 +24,7 @@ const ARROW_CROSS_SECTIONAL_AREA = 0.0005 // m^2
 const AIR_DENSITY = 1.225 // kg/m^3
 const MOVE_SPEED_X = 0 // km/h
 const GRAVITY = 9.8 // m/s^2
-const POINT_GRAPH_SCALE = 6 // グラフのスケール
+const POINT_GRAPH_SCALE = 10 // グラフのスケール
 const PARABOLA_GRAPH_BASE_X = 50 // グラフの基準Y座標
 const PARABOLA_GRAPH_BASE_Y = 150 // グラフの基準Y座標
 const TARGET_POS_Z = 38 // m
@@ -63,6 +63,8 @@ export class PinpointShooterScene extends Scene {
 
   arrowMoveParabolaGraph!: GameObjects.Graphics
 
+  graphics!: GameObjects.Graphics
+
   targetPosition = {
     z: TARGET_POS_Z,
     x: TARGET_POS_X,
@@ -89,7 +91,7 @@ export class PinpointShooterScene extends Scene {
     this.debugTexts = new DebugTexts()
     this.debugTexts.init(this, [
       'Pinpoint Shooter Scene',
-      'arrowFlightDistance: {1}',
+      'flightDistance: {1}',
       'px arrowFlightDistance: {1}',
       `Target z:${TARGET_POS_Z}, x:${TARGET_POS_X}, y:${TARGET_POS_Y}`,
       'Target is : {1}'
@@ -138,6 +140,26 @@ export class PinpointShooterScene extends Scene {
       PARABOLA_GRAPH_BASE_X + this.arrowState.z * POINT_GRAPH_SCALE,
       PARABOLA_GRAPH_BASE_Y - this.arrowState.y * POINT_GRAPH_SCALE
     )
+
+    this.graphics = this.add.graphics()
+    this.graphics.fillStyle(0x00ff00, 1) // 緑色、透明度1
+
+    const points = [
+      { x: 50, y: 150 }, //0
+      { x: 100, y: 150 }, //5      { x: 150, y: 150 },
+      { x: 150, y: 150 }, //5      { x: 150, y: 150 },
+      { x: 200, y: 150 }, //10
+      { x: 250, y: 150 }, //15
+      { x: 300, y: 150 }, //20
+      { x: 350, y: 150 }, //25
+      { x: 400, y: 150 }, //30
+      { x: 450, y: 150 }, //35
+      { x: 500, y: 150 } //40
+    ]
+
+    points.forEach((p) => {
+      this.graphics.fillCircle(p.x, p.y, 4) // 半径4pxの円
+    })
   }
 
   update(time: number, delta: number): void {
@@ -220,9 +242,9 @@ export class PinpointShooterScene extends Scene {
 
     this.debugTexts.replaceVariable(
       2,
-      `z: ${(this.arrowState.z * 10).toFixed(2)}, x: ${(this.arrowState.x * 10).toFixed(2)}, y: ${(
-        this.arrowState.y * 10
-      ).toFixed(2)}`
+      `z: ${(this.arrowState.z * POINT_GRAPH_SCALE).toFixed(2)}, x: ${(
+        this.arrowState.x * POINT_GRAPH_SCALE
+      ).toFixed(2)}, y: ${(this.arrowState.y * POINT_GRAPH_SCALE).toFixed(2)}`
     )
 
     this.arrowMoveParabolaGraph.clear()
