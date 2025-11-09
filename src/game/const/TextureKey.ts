@@ -44,7 +44,9 @@ enum TextureKey {
   NengaAtari_1 = 'nenga_atari_1',
   NengaAtari_2 = 'nenga_atari_2',
   NengaAtari_3 = 'nenga_atari_3',
-  NengaHazure = 'nenga_hazure'
+  NengaHazure = 'nenga_hazure',
+  AngleMaterArrow = 'angleMaterArrow',
+  AngleMater = 'angleMater'
 }
 
 export default TextureKey

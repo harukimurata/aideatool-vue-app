@@ -79,6 +79,10 @@ export class Preloader extends Scene {
     this.load.image(TextureKey.NengaAtari_2, 'image/nenga2025/atari/atari_chu_0.png')
     this.load.image(TextureKey.NengaAtari_3, 'image/nenga2025/atari/atari_dai_0.png')
     this.load.image(TextureKey.NengaHazure, 'image/nenga2025/hazure.png')
+
+    //ピンポイントシューター関連画像
+    this.load.image(TextureKey.AngleMater, 'image/pinpointShooter/angle_mater.png')
+    this.load.image(TextureKey.AngleMaterArrow, 'image/pinpointShooter/angle_mater_arrow.png')
   }
 
   create() {

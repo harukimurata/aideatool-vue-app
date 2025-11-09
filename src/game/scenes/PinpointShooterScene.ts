@@ -30,9 +30,14 @@ const PARABOLA_GRAPH_BASE_Y = 150 // グラフの基準Y座標
 const TARGET_POS_Z = 38 // m
 const TARGET_POS_X = 0 // m
 const TARGET_POS_Y = 1 // m
-const TARGET_SIZE_W = 0.6 // m
-const TARGET_SIZE_H = 0.6 // m
+const TARGET_SIZE_W = 2 // m
+const TARGET_SIZE_H = 2 // m
 const TARGET_SIZE_D = 0.1 // m
+const ANGLE_MATER_POS_X = 100 // px
+const ANGLE_MATER_POS_Y = 300 // px
+const ANGLE_MATER_ARROW_POS_X = 20 // px
+const ANGLE_MATER_ARROW_POS_Y = 380 // px
+const ANGLE_MATER_ARROW_MOVE_SPEED = 0.5 // degree per frame
 
 export class PinpointShooterScene extends Scene {
   // ゲーム内時間
@@ -48,6 +53,13 @@ export class PinpointShooterScene extends Scene {
 
   slotResetButton!: ImageButton
   slotPauseButton!: ImageButton
+
+  angleMaterImg!: GameObjects.Image
+  angleMaterArrowImg!: GameObjects.Image
+  angleMaterArrowMoveSpeed = ANGLE_MATER_ARROW_MOVE_SPEED
+  angleMaterArrowAngle = 0
+
+  v_0 = arrowInitialVelocity(BOW_SPRING_CONSTANT, BOW_DRAW_DISTANCE, ARROW_MASS)
 
   // 矢の状態
   arrowState: ArrowState = {
@@ -94,7 +106,9 @@ export class PinpointShooterScene extends Scene {
       'flightDistance: {1}',
       'px arrowFlightDistance: {1}',
       `Target z:${TARGET_POS_Z}, x:${TARGET_POS_X}, y:${TARGET_POS_Y}`,
-      'Target is : {1}'
+      'Hit Angle: {1}',
+      'Target is : {1}',
+      'Arrow Mater Angle: {1}'
     ])
 
     this.slotResetButton = new ImageButton(
@@ -120,6 +134,13 @@ export class PinpointShooterScene extends Scene {
       }
     ).setScale(0.7)
     this.add.existing(this.slotPauseButton)
+
+    this.angleMaterImg = this.add.image(ANGLE_MATER_POS_X, ANGLE_MATER_POS_Y, TextureKey.AngleMater)
+    this.angleMaterArrowImg = this.add
+      .image(ANGLE_MATER_ARROW_POS_X, ANGLE_MATER_ARROW_POS_Y, TextureKey.AngleMaterArrow)
+      .setScale(0.9)
+      .setOrigin(0.15, 0.5)
+      .setAngle(this.angleMaterArrowAngle)
 
     //矢の初期化
     this.initArrowState()
@@ -190,6 +211,8 @@ export class PinpointShooterScene extends Scene {
         )}, y: ${(this.arrowState.y * 10).toFixed(2)}`
       )
 
+      this.debugTexts.replaceVariable(4, this.angleMaterArrowAngle * -1)
+
       this.arrowMoveParabolaGraph.lineTo(
         PARABOLA_GRAPH_BASE_X + this.arrowState.z * POINT_GRAPH_SCALE,
         PARABOLA_GRAPH_BASE_Y - this.arrowState.y * POINT_GRAPH_SCALE
@@ -219,13 +242,15 @@ export class PinpointShooterScene extends Scene {
       ) {
         this.isTargetHit = true
         this.stop = false
-        this.debugTexts.replaceVariable(4, 'HIT!!!!')
+        this.debugTexts.replaceVariable(5, 'HIT!!!!')
       }
 
       if (this.arrowState.y <= 0) {
         this.stop = false
-        this.debugTexts.replaceVariable(4, 'Failure')
+        this.debugTexts.replaceVariable(5, 'Failure')
       }
+    } else {
+      this.setAngleMaterArrowAngle()
     }
   }
 
@@ -263,15 +288,29 @@ export class PinpointShooterScene extends Scene {
    * 矢の状態の初期化
    */
   private initArrowState() {
-    const v_0 = arrowInitialVelocity(BOW_SPRING_CONSTANT, BOW_DRAW_DISTANCE, ARROW_MASS)
-
-    const theta = (SHOOTING_ANGLE_DEG * Math.PI) / 180
+    this.angleMaterArrowAngle = 0
+    this.angleMaterArrowImg.setAngle(this.angleMaterArrowAngle)
 
     this.arrowState.z = 0
     this.arrowState.x = 0
     this.arrowState.y = START_ARROW_HEIGHT
-    this.arrowState.vz = v_0 * Math.cos(theta)
+    this.arrowState.vz = 0
     this.arrowState.vx = 0
-    this.arrowState.vy = v_0 * Math.sin(theta)
+    this.arrowState.vy = 0
+  }
+
+  private setAngleMaterArrowAngle() {
+    this.angleMaterArrowAngle += this.angleMaterArrowMoveSpeed
+    this.angleMaterArrowImg.setAngle(this.angleMaterArrowAngle)
+
+    this.debugTexts.replaceVariable(6, this.angleMaterArrowAngle * -1)
+
+    if (this.angleMaterArrowAngle < -90 || this.angleMaterArrowAngle > 0) {
+      this.angleMaterArrowMoveSpeed = this.angleMaterArrowMoveSpeed * -1
+    }
+
+    const theta = (this.angleMaterArrowAngle * -1 * Math.PI) / 180
+    this.arrowState.vz = this.v_0 * Math.cos(theta)
+    this.arrowState.vy = this.v_0 * Math.sin(theta)
   }
 }
