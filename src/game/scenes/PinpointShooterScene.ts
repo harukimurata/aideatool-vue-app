@@ -16,7 +16,7 @@ import {
 const BOW_SPRING_CONSTANT = 300 // N/m
 const ARROW_HEAD_SIZE = 0.03 // m
 const ARROW_MASS = 0.05 // kg
-const BOW_DRAW_DISTANCE = 0.5 // m 変数で決めるようにする
+const BOW_DRAW_DISTANCE = 0.005 // m 変数で決めるようにする
 const SHOOTING_ANGLE_DEG = 8 // degrees 変数で決めるようにする
 const START_ARROW_HEIGHT = 1.5 // m
 const AIR_RESISTANCE_COEFFICIENT = 1.0 // 空気抵抗係数
@@ -37,7 +37,8 @@ const ANGLE_MATER_POS_X = 100 // px
 const ANGLE_MATER_POS_Y = 300 // px
 const ANGLE_MATER_ARROW_POS_X = 20 // px
 const ANGLE_MATER_ARROW_POS_Y = 380 // px
-const ANGLE_MATER_ARROW_MOVE_SPEED = 0.5 // degree per frame
+const ANGLE_MATER_ARROW_MOVE_SPEED = 1 // degree per frame
+const BOW_DRAW_DISTANCE_MOVE_SPEED = 1 // degree per frame
 
 export class PinpointShooterScene extends Scene {
   // ゲーム内時間
@@ -54,12 +55,18 @@ export class PinpointShooterScene extends Scene {
   slotResetButton!: ImageButton
   slotPauseButton!: ImageButton
 
+  //矢を発射させる角度
   angleMaterImg!: GameObjects.Image
   angleMaterArrowImg!: GameObjects.Image
   angleMaterArrowMoveSpeed = ANGLE_MATER_ARROW_MOVE_SPEED
   angleMaterArrowAngle = 0
 
-  v_0 = arrowInitialVelocity(BOW_SPRING_CONSTANT, BOW_DRAW_DISTANCE, ARROW_MASS)
+  //弓を引く強さ
+  bowDrawDistance = 0
+  bowDrawDistanceMoveSpeed = BOW_DRAW_DISTANCE_MOVE_SPEED
+
+  //矢を発射させる速度
+  v_0 = 0
 
   // 矢の状態
   arrowState: ArrowState = {
@@ -106,9 +113,11 @@ export class PinpointShooterScene extends Scene {
       'flightDistance: {1}',
       'px arrowFlightDistance: {1}',
       `Target z:${TARGET_POS_Z}, x:${TARGET_POS_X}, y:${TARGET_POS_Y}`,
-      'Hit Angle: {1}',
+      'Shoot Angle: {1}',
+      'Shoot Power: {1}',
       'Target is : {1}',
-      'Arrow Mater Angle: {1}'
+      'Arrow Mater Angle: {1}',
+      'Bow Draw Distance: {1}'
     ])
 
     this.slotResetButton = new ImageButton(
@@ -212,6 +221,7 @@ export class PinpointShooterScene extends Scene {
       )
 
       this.debugTexts.replaceVariable(4, this.angleMaterArrowAngle * -1)
+      this.debugTexts.replaceVariable(5, this.bowDrawDistance * BOW_DRAW_DISTANCE)
 
       this.arrowMoveParabolaGraph.lineTo(
         PARABOLA_GRAPH_BASE_X + this.arrowState.z * POINT_GRAPH_SCALE,
@@ -242,14 +252,15 @@ export class PinpointShooterScene extends Scene {
       ) {
         this.isTargetHit = true
         this.stop = false
-        this.debugTexts.replaceVariable(5, 'HIT!!!!')
+        this.debugTexts.replaceVariable(6, 'HIT!!!!')
       }
 
       if (this.arrowState.y <= 0) {
         this.stop = false
-        this.debugTexts.replaceVariable(5, 'Failure')
+        this.debugTexts.replaceVariable(6, 'Failure')
       }
     } else {
+      this.setBowDrawDistance()
       this.setAngleMaterArrowAngle()
     }
   }
@@ -277,11 +288,16 @@ export class PinpointShooterScene extends Scene {
 
     this.isTargetHit = false
     this.debugTexts.replaceVariable(4, '')
+    this.debugTexts.replaceVariable(5, '')
   }
 
+  /**
+   * 発射トリガー
+   */
   private start() {
     this.stop = true
     this.arrowState.vx = this.moveState.x
+    this.setShootParam()
   }
 
   /**
@@ -290,6 +306,8 @@ export class PinpointShooterScene extends Scene {
   private initArrowState() {
     this.angleMaterArrowAngle = 0
     this.angleMaterArrowImg.setAngle(this.angleMaterArrowAngle)
+    this.bowDrawDistance = 0
+    this.v_0 = 0
 
     this.arrowState.z = 0
     this.arrowState.x = 0
@@ -299,18 +317,43 @@ export class PinpointShooterScene extends Scene {
     this.arrowState.vy = 0
   }
 
+  /**
+   * 矢を発射させる角度と弓を引く強さ
+   */
+  private setShootParam() {
+    this.v_0 = arrowInitialVelocity(
+      BOW_SPRING_CONSTANT,
+      this.bowDrawDistance * BOW_DRAW_DISTANCE,
+      ARROW_MASS
+    )
+    const theta = (this.angleMaterArrowAngle * -1 * Math.PI) / 180
+    this.arrowState.vz = this.v_0 * Math.cos(theta)
+    this.arrowState.vy = this.v_0 * Math.sin(theta)
+  }
+
+  /**
+   * 矢を発射させる角度
+   */
   private setAngleMaterArrowAngle() {
     this.angleMaterArrowAngle += this.angleMaterArrowMoveSpeed
     this.angleMaterArrowImg.setAngle(this.angleMaterArrowAngle)
 
-    this.debugTexts.replaceVariable(6, this.angleMaterArrowAngle * -1)
+    this.debugTexts.replaceVariable(7, this.angleMaterArrowAngle * -1)
 
-    if (this.angleMaterArrowAngle < -90 || this.angleMaterArrowAngle > 0) {
+    if (this.angleMaterArrowAngle <= -90 || this.angleMaterArrowAngle > 0) {
       this.angleMaterArrowMoveSpeed = this.angleMaterArrowMoveSpeed * -1
     }
+  }
 
-    const theta = (this.angleMaterArrowAngle * -1 * Math.PI) / 180
-    this.arrowState.vz = this.v_0 * Math.cos(theta)
-    this.arrowState.vy = this.v_0 * Math.sin(theta)
+  /**
+   * 弓を引く強さ
+   */
+  private setBowDrawDistance() {
+    this.bowDrawDistance += this.bowDrawDistanceMoveSpeed
+    this.debugTexts.replaceVariable(8, this.bowDrawDistance)
+
+    if (this.bowDrawDistance >= 100 || this.bowDrawDistance < 0) {
+      this.bowDrawDistanceMoveSpeed = this.bowDrawDistanceMoveSpeed * -1
+    }
   }
 }
