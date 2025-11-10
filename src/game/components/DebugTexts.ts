@@ -19,9 +19,10 @@ export default class DebugTexts {
   public init(scene: Phaser.Scene, texts: string[]) {
     let index = 0
     for (const text of texts) {
+      const baseText = `[${index}]` + text
       const y = 10 + this.texts.length * 22
-      const uiText = new UiText(scene, 10, y, text, 'Arial', '20px', '#000000', 100)
-      this.texts.push({ baseText: text, uiText })
+      const uiText = new UiText(scene, 10, y, baseText, 'Arial', '20px', '#000000', 100)
+      this.texts.push({ baseText: baseText, uiText })
       index++
     }
   }
