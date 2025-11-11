@@ -40,6 +40,14 @@ const ANGLE_MATER_ARROW_POS_Y = 380 // px
 const ANGLE_MATER_ARROW_MOVE_SPEED = 1 // degree per frame
 const BOW_DRAW_DISTANCE_MOVE_SPEED = 1 // degree per frame
 
+//発射までの状態
+const SHOOT_STEP = {
+  INIT: 0,
+  SET_POWER: 1,
+  SET_ANGLE: 2,
+  SHOOT: 3
+}
+
 export class PinpointShooterScene extends Scene {
   // ゲーム内時間
   private worldTime = 0
@@ -54,6 +62,9 @@ export class PinpointShooterScene extends Scene {
 
   slotResetButton!: ImageButton
   slotPauseButton!: ImageButton
+
+  //発射までのステップ
+  shootStep: number = SHOOT_STEP.INIT
 
   //矢を発射させる角度
   angleMaterImg!: GameObjects.Image
@@ -117,7 +128,8 @@ export class PinpointShooterScene extends Scene {
       'Shoot Power: {1}',
       'Target is : {1}',
       'Arrow Mater Angle: {1}',
-      'Bow Draw Distance: {1}'
+      'Bow Draw Distance: {1}',
+      'Shoot Step: {1}'
     ])
 
     this.slotResetButton = new ImageButton(
@@ -139,7 +151,7 @@ export class PinpointShooterScene extends Scene {
       TextureKey.SlotStartA,
       TextureKey.SlotStartB,
       () => {
-        this.start()
+        this.incrementShootStep()
       }
     ).setScale(0.7)
     this.add.existing(this.slotPauseButton)
@@ -190,6 +202,9 @@ export class PinpointShooterScene extends Scene {
     points.forEach((p) => {
       this.graphics.fillCircle(p.x, p.y, 4) // 半径4pxの円
     })
+
+    this.shootStep = SHOOT_STEP.SET_POWER
+    this.debugTexts.replaceVariable(9, this.shootStep)
   }
 
   update(time: number, delta: number): void {
@@ -260,8 +275,7 @@ export class PinpointShooterScene extends Scene {
         this.debugTexts.replaceVariable(6, 'Failure')
       }
     } else {
-      this.setBowDrawDistance()
-      this.setAngleMaterArrowAngle()
+      this.updateShootStep()
     }
   }
 
@@ -289,6 +303,36 @@ export class PinpointShooterScene extends Scene {
     this.isTargetHit = false
     this.debugTexts.replaceVariable(4, '')
     this.debugTexts.replaceVariable(5, '')
+
+    this.shootStep = SHOOT_STEP.SET_POWER
+    this.debugTexts.replaceVariable(9, this.shootStep)
+  }
+
+  /**
+   * 発射までのステップを進める
+   */
+  private incrementShootStep() {
+    if (!this.stop) {
+      this.shootStep++
+      this.debugTexts.replaceVariable(9, this.shootStep)
+    }
+  }
+
+  /**
+   * 各ステータスの更新処理
+   */
+  private updateShootStep() {
+    switch (this.shootStep) {
+      case SHOOT_STEP.SET_POWER:
+        this.setBowDrawDistance()
+        break
+      case SHOOT_STEP.SET_ANGLE:
+        this.setAngleMaterArrowAngle()
+        break
+      case SHOOT_STEP.SHOOT:
+        this.start()
+        break
+    }
   }
 
   /**
@@ -298,6 +342,7 @@ export class PinpointShooterScene extends Scene {
     this.stop = true
     this.arrowState.vx = this.moveState.x
     this.setShootParam()
+    this.shootStep = SHOOT_STEP.INIT
   }
 
   /**
@@ -315,6 +360,8 @@ export class PinpointShooterScene extends Scene {
     this.arrowState.vz = 0
     this.arrowState.vx = 0
     this.arrowState.vy = 0
+
+    this.shootStep = SHOOT_STEP.INIT
   }
 
   /**
