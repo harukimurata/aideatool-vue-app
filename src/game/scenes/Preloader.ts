@@ -83,6 +83,8 @@ export class Preloader extends Scene {
     //ピンポイントシューター関連画像
     this.load.image(TextureKey.AngleMater, 'image/pinpointShooter/angle_mater.png')
     this.load.image(TextureKey.AngleMaterArrow, 'image/pinpointShooter/angle_mater_arrow.png')
+    this.load.image(TextureKey.PowerBar, 'image/pinpointShooter/power_bar.png')
+    this.load.image(TextureKey.PowerLevel, 'image/pinpointShooter/power_level.png')
   }
 
   create() {

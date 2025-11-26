@@ -39,6 +39,9 @@ const ANGLE_MATER_ARROW_POS_X = 20 // px
 const ANGLE_MATER_ARROW_POS_Y = 380 // px
 const ANGLE_MATER_ARROW_MOVE_SPEED = 1 // degree per frame
 const BOW_DRAW_DISTANCE_MOVE_SPEED = 1 // degree per frame
+const BOW_DRAW_POWER_BAR_POS_Y_MIN = 220 // px
+const BOW_DRAW_POWER_BAR_POS_Y_MAX = -155 // px
+const BOW_DRAW_POWER_BAR_MOVE_VALUE = 3.75 // px
 
 //発射までの状態
 const SHOOT_STEP = {
@@ -56,6 +59,8 @@ export class PinpointShooterScene extends Scene {
 
   private gameWidth = 0
   private gameHeight = 0
+  private gameCenterX = 0
+  private gameCenterY = 0
 
   // デバッグ用テキスト
   private debugTexts!: DebugTexts
@@ -75,6 +80,8 @@ export class PinpointShooterScene extends Scene {
   //弓を引く強さ
   bowDrawDistance = 0
   bowDrawDistanceMoveSpeed = BOW_DRAW_DISTANCE_MOVE_SPEED
+  bowDrawPowerBarImg!: GameObjects.Image
+  bowDrawPowerBarImg_posY = 0
 
   //矢を発射させる速度
   v_0 = 0
@@ -115,9 +122,12 @@ export class PinpointShooterScene extends Scene {
     // 画面サイズ
     this.gameWidth = this.scale.width
     this.gameHeight = this.scale.height
+    this.gameCenterX = this.gameWidth / 2
+    this.gameCenterY = this.gameHeight / 2
 
     this.add.image(this.gameWidth / 2, this.gameHeight / 2, TextureKey.DefaultBg)
 
+    //デバッグテキスト
     this.debugTexts = new DebugTexts()
     this.debugTexts.init(this, [
       'Pinpoint Shooter Scene',
@@ -162,6 +172,17 @@ export class PinpointShooterScene extends Scene {
       .setScale(0.9)
       .setOrigin(0.15, 0.5)
       .setAngle(this.angleMaterArrowAngle)
+
+    //矢のパワーバー
+    this.add
+      .image(this.gameCenterX + 250, this.gameCenterY + 30, TextureKey.PowerLevel)
+      .setScale(0.2)
+
+    //パワーバーの範囲-155 ~ 220
+    this.bowDrawPowerBarImg_posY = this.gameCenterY + 220
+    this.bowDrawPowerBarImg = this.add
+      .image(this.gameCenterX + 250, this.bowDrawPowerBarImg_posY, TextureKey.PowerBar)
+      .setScale(0.2)
 
     //矢の初期化
     this.initArrowState()
@@ -349,6 +370,8 @@ export class PinpointShooterScene extends Scene {
    * 矢の状態の初期化
    */
   private initArrowState() {
+    this.bowDrawPowerBarImg_posY = this.gameCenterY + 220
+    this.bowDrawPowerBarImg.setY(this.bowDrawPowerBarImg_posY)
     this.angleMaterArrowAngle = 0
     this.angleMaterArrowImg.setAngle(this.angleMaterArrowAngle)
     this.bowDrawDistance = 0
@@ -399,6 +422,8 @@ export class PinpointShooterScene extends Scene {
     this.bowDrawDistance += this.bowDrawDistanceMoveSpeed
     this.debugTexts.replaceVariable(8, this.bowDrawDistance)
 
+    this.bowDrawPowerBarImg_posY -= BOW_DRAW_POWER_BAR_MOVE_VALUE * this.bowDrawDistanceMoveSpeed
+    this.bowDrawPowerBarImg.setY(this.bowDrawPowerBarImg_posY)
     if (this.bowDrawDistance >= 100 || this.bowDrawDistance < 0) {
       this.bowDrawDistanceMoveSpeed = this.bowDrawDistanceMoveSpeed * -1
     }
