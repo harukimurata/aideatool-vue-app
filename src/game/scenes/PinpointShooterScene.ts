@@ -12,6 +12,7 @@ import {
   arrowInitialVelocity,
   stepAirResistanceArrowFlight
 } from '../logic/physics'
+import { generateRandomInt, generateRandomFloat } from '../utils'
 
 const BOW_SPRING_CONSTANT = 300 // N/m
 const ARROW_HEAD_SIZE = 0.03 // m
@@ -83,6 +84,11 @@ export class PinpointShooterScene extends Scene {
   bowDrawPowerBarImg!: GameObjects.Image
   bowDrawPowerBarImg_posY = 0
 
+  //風の方向
+  windDirectionZ = 0
+  windDirectionX = 0
+  windDirectionImg!: GameObjects.Image
+
   //矢を発射させる速度
   v_0 = 0
 
@@ -96,7 +102,7 @@ export class PinpointShooterScene extends Scene {
     vy: 0
   }
   // 移動状態
-  moveState: MoveState = { z: 0, x: MOVE_SPEED_X / 3.6, y: 0 }
+  moveState: MoveState = { z: 0, x: 0, y: 0 }
 
   arrowMoveParabolaGraph!: GameObjects.Graphics
 
@@ -134,6 +140,7 @@ export class PinpointShooterScene extends Scene {
       'flightDistance: {1}',
       'px arrowFlightDistance: {1}',
       `Target z:${TARGET_POS_Z}, x:${TARGET_POS_X}, y:${TARGET_POS_Y}`,
+      'WindAngle: {1}',
       'Shoot Angle: {1}',
       'Shoot Power: {1}',
       'Target is : {1}',
@@ -172,6 +179,12 @@ export class PinpointShooterScene extends Scene {
       .setScale(0.9)
       .setOrigin(0.15, 0.5)
       .setAngle(this.angleMaterArrowAngle)
+
+    //風の方向と強さ
+    this.windDirectionImg = this.add
+      .image(this.gameCenterX + 250, this.gameCenterY - 250, TextureKey.WindVector)
+      .setScale(0.1)
+    this.calcWindDirection()
 
     //矢のパワーバー
     this.add
@@ -225,7 +238,7 @@ export class PinpointShooterScene extends Scene {
     })
 
     this.shootStep = SHOOT_STEP.SET_POWER
-    this.debugTexts.replaceVariable(9, this.shootStep)
+    this.debugTexts.replaceVariable(10, this.shootStep)
   }
 
   update(time: number, delta: number): void {
@@ -246,7 +259,7 @@ export class PinpointShooterScene extends Scene {
           2
         )}, y: ${this.arrowState.y.toFixed(2)}, vz: ${this.arrowState.vz.toFixed(
           2
-        )}, vx: ${this.arrowState.vz.toFixed(2)}, vy: ${this.arrowState.vy.toFixed(2)}`
+        )}, vx: ${this.arrowState.vx.toFixed(2)}, vy: ${this.arrowState.vy.toFixed(2)}`
       )
 
       this.debugTexts.replaceVariable(
@@ -256,8 +269,8 @@ export class PinpointShooterScene extends Scene {
         )}, y: ${(this.arrowState.y * 10).toFixed(2)}`
       )
 
-      this.debugTexts.replaceVariable(4, this.angleMaterArrowAngle * -1)
-      this.debugTexts.replaceVariable(5, this.bowDrawDistance * BOW_DRAW_DISTANCE)
+      this.debugTexts.replaceVariable(5, this.angleMaterArrowAngle * -1)
+      this.debugTexts.replaceVariable(6, this.bowDrawDistance * BOW_DRAW_DISTANCE)
 
       this.arrowMoveParabolaGraph.lineTo(
         PARABOLA_GRAPH_BASE_X + this.arrowState.z * POINT_GRAPH_SCALE,
@@ -288,12 +301,12 @@ export class PinpointShooterScene extends Scene {
       ) {
         this.isTargetHit = true
         this.stop = false
-        this.debugTexts.replaceVariable(6, 'HIT!!!!')
+        this.debugTexts.replaceVariable(7, 'HIT!!!!')
       }
 
       if (this.arrowState.y <= 0) {
         this.stop = false
-        this.debugTexts.replaceVariable(6, 'Failure')
+        this.debugTexts.replaceVariable(7, 'Failure')
       }
     } else {
       this.updateShootStep()
@@ -308,7 +321,7 @@ export class PinpointShooterScene extends Scene {
         2
       )}, y: ${this.arrowState.y.toFixed(2)}, vz: ${this.arrowState.vz.toFixed(
         2
-      )}, vx: ${this.arrowState.vz.toFixed(2)}, vy: ${this.arrowState.vy.toFixed(2)}`
+      )}, vx: ${this.arrowState.vx.toFixed(2)}, vy: ${this.arrowState.vy.toFixed(2)}`
     )
 
     this.debugTexts.replaceVariable(
@@ -322,11 +335,11 @@ export class PinpointShooterScene extends Scene {
     this.arrowMoveParabolaGraph.lineStyle(2, 0xff0000, 1)
 
     this.isTargetHit = false
-    this.debugTexts.replaceVariable(4, '')
     this.debugTexts.replaceVariable(5, '')
+    this.debugTexts.replaceVariable(6, '')
 
     this.shootStep = SHOOT_STEP.SET_POWER
-    this.debugTexts.replaceVariable(9, this.shootStep)
+    this.debugTexts.replaceVariable(10, this.shootStep)
   }
 
   /**
@@ -335,7 +348,7 @@ export class PinpointShooterScene extends Scene {
   private incrementShootStep() {
     if (!this.stop) {
       this.shootStep++
-      this.debugTexts.replaceVariable(9, this.shootStep)
+      this.debugTexts.replaceVariable(10, this.shootStep)
     }
   }
 
@@ -361,8 +374,10 @@ export class PinpointShooterScene extends Scene {
    */
   private start() {
     this.stop = true
-    this.arrowState.vx = this.moveState.x
     this.setShootParam()
+    // 風の影響を初速に加算
+    this.arrowState.vx = this.windDirectionX
+    this.arrowState.vz += this.windDirectionZ
     this.shootStep = SHOOT_STEP.INIT
   }
 
@@ -377,6 +392,7 @@ export class PinpointShooterScene extends Scene {
     this.bowDrawDistance = 0
     this.v_0 = 0
 
+    //矢の状態を初期化
     this.arrowState.z = 0
     this.arrowState.x = 0
     this.arrowState.y = START_ARROW_HEIGHT
@@ -384,6 +400,10 @@ export class PinpointShooterScene extends Scene {
     this.arrowState.vx = 0
     this.arrowState.vy = 0
 
+    //風の影響を計算
+    this.calcWindDirection()
+
+    //発射ステップを初期化
     this.shootStep = SHOOT_STEP.INIT
   }
 
@@ -396,6 +416,7 @@ export class PinpointShooterScene extends Scene {
       this.bowDrawDistance * BOW_DRAW_DISTANCE,
       ARROW_MASS
     )
+
     const theta = (this.angleMaterArrowAngle * -1 * Math.PI) / 180
     this.arrowState.vz = this.v_0 * Math.cos(theta)
     this.arrowState.vy = this.v_0 * Math.sin(theta)
@@ -408,7 +429,7 @@ export class PinpointShooterScene extends Scene {
     this.angleMaterArrowAngle += this.angleMaterArrowMoveSpeed
     this.angleMaterArrowImg.setAngle(this.angleMaterArrowAngle)
 
-    this.debugTexts.replaceVariable(7, this.angleMaterArrowAngle * -1)
+    this.debugTexts.replaceVariable(8, this.angleMaterArrowAngle * -1)
 
     if (this.angleMaterArrowAngle <= -90 || this.angleMaterArrowAngle > 0) {
       this.angleMaterArrowMoveSpeed = this.angleMaterArrowMoveSpeed * -1
@@ -420,12 +441,34 @@ export class PinpointShooterScene extends Scene {
    */
   private setBowDrawDistance() {
     this.bowDrawDistance += this.bowDrawDistanceMoveSpeed
-    this.debugTexts.replaceVariable(8, this.bowDrawDistance)
+    this.debugTexts.replaceVariable(9, this.bowDrawDistance)
 
     this.bowDrawPowerBarImg_posY -= BOW_DRAW_POWER_BAR_MOVE_VALUE * this.bowDrawDistanceMoveSpeed
     this.bowDrawPowerBarImg.setY(this.bowDrawPowerBarImg_posY)
     if (this.bowDrawDistance >= 100 || this.bowDrawDistance < 0) {
       this.bowDrawDistanceMoveSpeed = this.bowDrawDistanceMoveSpeed * -1
     }
+  }
+
+  /**
+   * 風の強さ・方向をランダムに決める
+   */
+  private calcWindDirection() {
+    const F = generateRandomFloat(0.1, 2.0) // N 風の力の大きさ
+    const angleDeg = generateRandomInt(0, 360) // degrees 風の向き
+    const angle = (angleDeg * Math.PI) / 180 // 度→ラジアン変換
+
+    this.windDirectionImg.setAngle(angleDeg)
+
+    const Fx = F * Math.cos(angle) // x方向
+    const Fz = F * Math.sin(angle) // z方向
+
+    this.debugTexts.replaceVariable(
+      4,
+      `${angleDeg} deg (Fx[wD_X] ${Fx.toFixed(2)} N, Fz[wD_Z] ${Fz.toFixed(2)} N)`
+    )
+
+    this.windDirectionZ = Fz
+    this.windDirectionX = Fx
   }
 }

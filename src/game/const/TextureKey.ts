@@ -48,7 +48,8 @@ enum TextureKey {
   AngleMaterArrow = 'angleMaterArrow',
   AngleMater = 'angleMater',
   PowerBar = 'power_bar',
-  PowerLevel = 'power_level'
+  PowerLevel = 'power_level',
+  WindVector = 'wind_vector'
 }
 
 export default TextureKey
