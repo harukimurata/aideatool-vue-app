@@ -417,6 +417,7 @@ export class PinpointShooterScene extends Scene {
     }
   }
 
+  //リセット処理
   private reset() {
     this.initArrowState()
     this.debugTexts.replaceVariable(
@@ -482,7 +483,7 @@ export class PinpointShooterScene extends Scene {
     this.setShootParam()
     // 風の影響を初速に加算
     this.arrowState.x = this.scopeDirection * 0.1
-    this.arrowState.vx = this.windDirectionX
+    this.arrowState.vx += this.windDirectionX
     this.arrowState.vz += this.windDirectionZ
     this.shootStep = SHOOT_STEP.INIT
   }
@@ -585,19 +586,19 @@ export class PinpointShooterScene extends Scene {
    * 風の強さ・方向をランダムに決める
    */
   private calcWindDirection() {
-    const F = generateRandomFloat(0.1, 2.0) // N 風の力の大きさ
+    const F = Number(generateRandomFloat(0.1, 2.0).toFixed(2)) // N 風の力の大きさ
     const angleDeg = generateRandomInt(0, 360) // degrees 風の向き
-    const angle = (angleDeg * Math.PI) / 180 // 度→ラジアン変換
 
     this.windDirectionImg.setAngle(angleDeg)
-    this.windForceText.setTextString(`${F.toFixed(2)}`)
+    this.windForceText.setTextString(`${F}`)
 
+    const angle = ((angleDeg - 90) * Math.PI) / 180 // 度→ラジアン変換
     const Fx = F * Math.cos(angle) // x方向
-    const Fz = F * Math.sin(angle) // z方向
+    const Fz = F * Math.sin(angle) * -1 // z方向
 
     this.debugTexts.replaceVariable(
       4,
-      `${angleDeg} deg (Fx[wD_X] ${Fx.toFixed(2)} N, Fz[wD_Z] ${Fz.toFixed(2)} N)`
+      `${angleDeg} deg (Fx[wD_X] ${Fx.toFixed(2)}, Fz[wD_Z] ${Fz.toFixed(2)})`
     )
 
     this.windDirectionZ = Fz
