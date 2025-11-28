@@ -15,11 +15,11 @@ export const SceneKey: SceneKeyType[] = [
     scene_name: 'SlotScene'
   },
   {
-    name: 'スクラッチ',
+    name: '年賀状企画 2025 -銀削-',
     scene_name: 'ScratchScene'
   },
   {
-    name: 'ピンポイントシューター',
+    name: '年賀状企画 2026 -的屋-',
     scene_name: 'PinpointShooterScene'
   }
 ]
