@@ -29,7 +29,7 @@ const GRAVITY = 9.8 // m/s^2
 const POINT_GRAPH_SCALE = 10 // グラフのスケール
 const PARABOLA_GRAPH_BASE_X = 50 // グラフの基準Y座標
 const PARABOLA_GRAPH_BASE_Y = 150 // グラフの基準Y座標
-const TARGET_POS_Z = 38 // m
+const TARGET_POS_Z = 40 // m
 const TARGET_POS_X = 0 // m
 const TARGET_POS_Y = 1 // m
 const TARGET_SIZE_W = 2 // m
@@ -50,8 +50,7 @@ const SCOPE_MOVE_SPEED = 2
 const SHOOT_STEP = {
   INIT: 0,
   SET_POWER: 1,
-  SET_ANGLE: 2,
-  SHOOT: 3
+  SHOOT: 2
 }
 
 export class PinpointShooterScene extends Scene {
@@ -465,9 +464,6 @@ export class PinpointShooterScene extends Scene {
       case SHOOT_STEP.SET_POWER:
         this.setBowDrawDistance()
         break
-      case SHOOT_STEP.SET_ANGLE:
-        //this.setAngleMaterArrowAngle()
-        break
       case SHOOT_STEP.SHOOT:
         this.start()
         console.log(this.arrowState)
@@ -586,7 +582,7 @@ export class PinpointShooterScene extends Scene {
    * 風の強さ・方向をランダムに決める
    */
   private calcWindDirection() {
-    const F = Number(generateRandomFloat(0.1, 2.0).toFixed(2)) // N 風の力の大きさ
+    const F = Number(generateRandomFloat(0.1, 3.0).toFixed(2)) // N 風の力の大きさ
     const angleDeg = generateRandomInt(0, 360) // degrees 風の向き
 
     this.windDirectionImg.setAngle(angleDeg)
