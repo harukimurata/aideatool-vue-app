@@ -39,12 +39,12 @@ const ANGLE_MATER_POS_X = 100 // px
 const ANGLE_MATER_POS_Y = 300 // px
 const ANGLE_MATER_ARROW_POS_X = 20 // px
 const ANGLE_MATER_ARROW_POS_Y = 380 // px
-const ANGLE_MATER_ARROW_MOVE_SPEED = 1 // degree per frame
+const ANGLE_MATER_ARROW_MOVE_SPEED = 2 // degree per frame
 const BOW_DRAW_DISTANCE_MOVE_SPEED = 1 // degree per frame
 const BOW_DRAW_POWER_BAR_POS_Y_MIN = 220 // px
 const BOW_DRAW_POWER_BAR_POS_Y_MAX = -155 // px
 const BOW_DRAW_POWER_BAR_MOVE_VALUE = 3.75 // px
-const SCOPE_MOVE_SPEED = 5
+const SCOPE_MOVE_SPEED = 2
 
 //発射までの状態
 const SHOOT_STEP = {
@@ -92,6 +92,15 @@ export class PinpointShooterScene extends Scene {
   windDirectionImg!: GameObjects.Image
   windForce = 0
   windForceText!: UiText
+
+  //スコープ移動ボタン
+  scopeImg!: GameObjects.Image
+  scopeMoveButtonUp!: ImageButton
+  scopeMoveButtonDown!: ImageButton
+  scopeMoveButtonLeft!: ImageButton
+  scopeMoveButtonRight!: ImageButton
+  scopeDirection = 0
+  scopeMoveSpeed = SCOPE_MOVE_SPEED
 
   //矢を発射させる速度
   v_0 = 0
@@ -156,7 +165,7 @@ export class PinpointShooterScene extends Scene {
     this.slotResetButton = new ImageButton(
       this,
       this.gameWidth / 2,
-      this.gameHeight / 2,
+      this.gameHeight / 2 + 200,
       TextureKey.SlotBetA,
       TextureKey.SlotBetB,
       () => {
@@ -168,7 +177,7 @@ export class PinpointShooterScene extends Scene {
     this.slotPauseButton = new ImageButton(
       this,
       this.gameWidth / 2,
-      this.gameHeight / 2 + 100,
+      this.gameHeight / 2 + 300,
       TextureKey.SlotStartA,
       TextureKey.SlotStartB,
       () => {
@@ -199,6 +208,85 @@ export class PinpointShooterScene extends Scene {
       100
     )
     this.calcWindDirection()
+
+    //スコープ
+    this.scopeImg = this.add
+      .image(this.gameCenterX, this.gameCenterY, TextureKey.Scope)
+      .setScale(0.25)
+
+    this.scopeMoveButtonUp = new ImageButton(
+      this,
+      100,
+      this.gameCenterY / 2 + 350,
+      TextureKey.ScopeArrowOff,
+      TextureKey.ScopeArrowOn,
+      () => {
+        console.log('up')
+      },
+      () => {},
+      () => {
+        console.log('hold up')
+        this.setAngleMaterArrowAngle(true)
+      }
+    ).setScale(0.2)
+    this.add.existing(this.scopeMoveButtonUp)
+
+    this.scopeMoveButtonDown = new ImageButton(
+      this,
+      100,
+      this.gameCenterY / 2 + 450,
+      TextureKey.ScopeArrowOff,
+      TextureKey.ScopeArrowOn,
+      () => {
+        console.log('down')
+      },
+      () => {},
+      () => {
+        console.log('hold down')
+        this.setAngleMaterArrowAngle(false)
+      }
+    )
+      .setScale(0.2)
+      .setAngle(180)
+    this.add.existing(this.scopeMoveButtonDown)
+
+    this.scopeMoveButtonRight = new ImageButton(
+      this,
+      160,
+      this.gameCenterY / 2 + 400,
+      TextureKey.ScopeArrowOff,
+      TextureKey.ScopeArrowOn,
+      () => {
+        console.log('right')
+      },
+      () => {},
+      () => {
+        console.log('hold right')
+        this.setArrowDirection(true)
+      }
+    )
+      .setScale(0.2)
+      .setAngle(90)
+    this.add.existing(this.scopeMoveButtonRight)
+
+    this.scopeMoveButtonLeft = new ImageButton(
+      this,
+      40,
+      this.gameCenterY / 2 + 400,
+      TextureKey.ScopeArrowOff,
+      TextureKey.ScopeArrowOn,
+      () => {
+        console.log('left')
+      },
+      () => {},
+      () => {
+        console.log('hold left')
+        this.setArrowDirection(false)
+      }
+    )
+      .setScale(0.2)
+      .setAngle(270)
+    this.add.existing(this.scopeMoveButtonLeft)
 
     //矢のパワーバー
     this.add
@@ -255,77 +343,79 @@ export class PinpointShooterScene extends Scene {
     this.debugTexts.replaceVariable(10, this.shootStep)
   }
 
-  // update(time: number, delta: number): void {
-  //   if (this.stop) {
-  //     const dt = delta / 1000 // Phaser のフレーム時間
-  //     this.arrowState = stepAirResistanceArrowFlight(
-  //       this.arrowState,
-  //       ARROW_MASS,
-  //       AIR_RESISTANCE_COEFFICIENT,
-  //       ARROW_CROSS_SECTIONAL_AREA,
-  //       AIR_DENSITY,
-  //       dt
-  //     )
+  update(time: number, delta: number): void {
+    if (this.stop) {
+      const dt = delta / 1000 // Phaser のフレーム時間
+      this.arrowState = stepAirResistanceArrowFlight(
+        this.arrowState,
+        ARROW_MASS,
+        AIR_RESISTANCE_COEFFICIENT,
+        ARROW_CROSS_SECTIONAL_AREA,
+        AIR_DENSITY,
+        dt
+      )
 
-  //     this.debugTexts.replaceVariable(
-  //       1,
-  //       `z: ${this.arrowState.z.toFixed(2)}, x: ${this.arrowState.x.toFixed(
-  //         2
-  //       )}, y: ${this.arrowState.y.toFixed(2)}, vz: ${this.arrowState.vz.toFixed(
-  //         2
-  //       )}, vx: ${this.arrowState.vx.toFixed(2)}, vy: ${this.arrowState.vy.toFixed(2)}`
-  //     )
+      this.debugTexts.replaceVariable(
+        1,
+        `z: ${this.arrowState.z.toFixed(2)}, x: ${this.arrowState.x.toFixed(
+          2
+        )}, y: ${this.arrowState.y.toFixed(2)}, vz: ${this.arrowState.vz.toFixed(
+          2
+        )}, vx: ${this.arrowState.vx.toFixed(2)}, vy: ${this.arrowState.vy.toFixed(2)}`
+      )
 
-  //     this.debugTexts.replaceVariable(
-  //       2,
-  //       `z: ${(this.arrowState.z * 10).toFixed(2)}, x: ${(this.arrowState.x * 10).toFixed(
-  //         2
-  //       )}, y: ${(this.arrowState.y * 10).toFixed(2)}`
-  //     )
+      this.debugTexts.replaceVariable(
+        2,
+        `z: ${(this.arrowState.z * 10).toFixed(2)}, x: ${(this.arrowState.x * 10).toFixed(
+          2
+        )}, y: ${(this.arrowState.y * 10).toFixed(2)}`
+      )
 
-  //     this.debugTexts.replaceVariable(5, this.angleMaterArrowAngle * -1)
-  //     this.debugTexts.replaceVariable(6, this.bowDrawDistance * BOW_DRAW_DISTANCE)
+      this.debugTexts.replaceVariable(5, this.angleMaterArrowAngle * -1)
+      this.debugTexts.replaceVariable(6, this.bowDrawDistance * BOW_DRAW_DISTANCE)
 
-  //     this.arrowMoveParabolaGraph.lineTo(
-  //       PARABOLA_GRAPH_BASE_X + this.arrowState.z * POINT_GRAPH_SCALE,
-  //       PARABOLA_GRAPH_BASE_Y - this.arrowState.y * POINT_GRAPH_SCALE
-  //     )
-  //     this.arrowMoveParabolaGraph.strokePath()
+      this.arrowMoveParabolaGraph.lineTo(
+        PARABOLA_GRAPH_BASE_X + this.arrowState.z * POINT_GRAPH_SCALE,
+        PARABOLA_GRAPH_BASE_Y - this.arrowState.y * POINT_GRAPH_SCALE
+      )
+      this.arrowMoveParabolaGraph.strokePath()
 
-  //     if (
-  //       !this.isTargetHit &&
-  //       is3DBoxCollision(
-  //         {
-  //           x: this.arrowState.x - ARROW_HEAD_SIZE / 2,
-  //           y: this.arrowState.y - ARROW_HEAD_SIZE / 2,
-  //           z: this.arrowState.z - ARROW_HEAD_SIZE / 2,
-  //           width: ARROW_HEAD_SIZE,
-  //           height: ARROW_HEAD_SIZE,
-  //           depth: ARROW_HEAD_SIZE
-  //         },
-  //         {
-  //           x: this.targetPosition.x - TARGET_SIZE_W / 2,
-  //           y: this.targetPosition.y - TARGET_SIZE_H / 2,
-  //           z: this.targetPosition.z - TARGET_SIZE_D / 2,
-  //           width: TARGET_SIZE_W,
-  //           height: TARGET_SIZE_H,
-  //           depth: TARGET_SIZE_D
-  //         }
-  //       )
-  //     ) {
-  //       this.isTargetHit = true
-  //       this.stop = false
-  //       this.debugTexts.replaceVariable(7, 'HIT!!!!')
-  //     }
+      if (
+        !this.isTargetHit &&
+        is3DBoxCollision(
+          {
+            x: this.arrowState.x - ARROW_HEAD_SIZE / 2,
+            y: this.arrowState.y - ARROW_HEAD_SIZE / 2,
+            z: this.arrowState.z - ARROW_HEAD_SIZE / 2,
+            width: ARROW_HEAD_SIZE,
+            height: ARROW_HEAD_SIZE,
+            depth: ARROW_HEAD_SIZE
+          },
+          {
+            x: this.targetPosition.x - TARGET_SIZE_W / 2,
+            y: this.targetPosition.y - TARGET_SIZE_H / 2,
+            z: this.targetPosition.z - TARGET_SIZE_D / 2,
+            width: TARGET_SIZE_W,
+            height: TARGET_SIZE_H,
+            depth: TARGET_SIZE_D
+          }
+        )
+      ) {
+        this.isTargetHit = true
+        this.stop = false
+        this.debugTexts.replaceVariable(7, 'HIT!!!!')
+        console.log(this.arrowState)
+      }
 
-  //     if (this.arrowState.y <= 0) {
-  //       this.stop = false
-  //       this.debugTexts.replaceVariable(7, 'Failure')
-  //     }
-  //   } else {
-  //     this.updateShootStep()
-  //   }
-  // }
+      if (this.arrowState.y <= 0) {
+        this.stop = false
+        this.debugTexts.replaceVariable(7, 'Failure')
+        console.log(this.arrowState)
+      }
+    } else {
+      this.updateShootStep()
+    }
+  }
 
   private reset() {
     this.initArrowState()
@@ -375,10 +465,11 @@ export class PinpointShooterScene extends Scene {
         this.setBowDrawDistance()
         break
       case SHOOT_STEP.SET_ANGLE:
-        this.setAngleMaterArrowAngle()
+        //this.setAngleMaterArrowAngle()
         break
       case SHOOT_STEP.SHOOT:
         this.start()
+        console.log(this.arrowState)
         break
     }
   }
@@ -390,6 +481,7 @@ export class PinpointShooterScene extends Scene {
     this.stop = true
     this.setShootParam()
     // 風の影響を初速に加算
+    this.arrowState.x = this.scopeDirection * 0.1
     this.arrowState.vx = this.windDirectionX
     this.arrowState.vz += this.windDirectionZ
     this.shootStep = SHOOT_STEP.INIT
@@ -405,6 +497,9 @@ export class PinpointShooterScene extends Scene {
     this.angleMaterArrowImg.setAngle(this.angleMaterArrowAngle)
     this.bowDrawDistance = 0
     this.v_0 = 0
+
+    this.scopeImg.setY(this.gameCenterY)
+    this.scopeImg.setX(this.gameCenterX)
 
     //矢の状態を初期化
     this.arrowState.z = 0
@@ -439,15 +534,37 @@ export class PinpointShooterScene extends Scene {
   /**
    * 矢を発射させる角度
    */
-  private setAngleMaterArrowAngle() {
-    this.angleMaterArrowAngle += this.angleMaterArrowMoveSpeed
+  private setAngleMaterArrowAngle(isUp: boolean) {
+    this.angleMaterArrowAngle += isUp
+      ? -this.angleMaterArrowMoveSpeed
+      : this.angleMaterArrowMoveSpeed
+
+    if (this.angleMaterArrowAngle <= -60) {
+      this.angleMaterArrowAngle = -60
+    } else if (this.angleMaterArrowAngle > 20) {
+      this.angleMaterArrowAngle = 20
+    }
     this.angleMaterArrowImg.setAngle(this.angleMaterArrowAngle)
 
     this.debugTexts.replaceVariable(8, this.angleMaterArrowAngle * -1)
+    const scopePosY = this.gameCenterY + this.angleMaterArrowAngle * SCOPE_MOVE_SPEED
+    this.scopeImg.setY(scopePosY)
+  }
 
-    if (this.angleMaterArrowAngle <= -90 || this.angleMaterArrowAngle > 0) {
-      this.angleMaterArrowMoveSpeed = this.angleMaterArrowMoveSpeed * -1
+  /**
+   * 矢を発射させる方向
+   */
+  private setArrowDirection(isRight: boolean) {
+    this.scopeDirection += isRight ? SCOPE_MOVE_SPEED : -SCOPE_MOVE_SPEED
+
+    if (this.scopeDirection <= -20) {
+      this.scopeDirection = -20
+    } else if (this.scopeDirection > 20) {
+      this.scopeDirection = 20
     }
+
+    const scopePosX = this.gameCenterX + this.scopeDirection * SCOPE_MOVE_SPEED
+    this.scopeImg.setX(scopePosX)
   }
 
   /**

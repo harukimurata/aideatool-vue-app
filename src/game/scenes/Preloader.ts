@@ -86,6 +86,9 @@ export class Preloader extends Scene {
     this.load.image(TextureKey.PowerBar, 'image/pinpointShooter/power_bar.png')
     this.load.image(TextureKey.PowerLevel, 'image/pinpointShooter/power_level.png')
     this.load.image(TextureKey.WindVector, 'image/pinpointShooter/wind_vector.png')
+    this.load.image(TextureKey.Scope, 'image/pinpointShooter/scope.png')
+    this.load.image(TextureKey.ScopeArrowOff, 'image/pinpointShooter/scope_arrow_off.png')
+    this.load.image(TextureKey.ScopeArrowOn, 'image/pinpointShooter/scope_arrow_on.png')
   }
 
   create() {
