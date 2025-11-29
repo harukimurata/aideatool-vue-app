@@ -101,12 +101,13 @@ export function resistanceAcceleration(Fd: number, m: number, d: number, v: numb
 
 /**
  * 空気抵抗を考慮した矢の飛行状態の1ステップ進行
- * @param state {z, y, x, vz, vx, vy} 矢の状態
- * @param m // 矢の重さ
+ * @param state // 矢の状態
+ * @param m // 矢の質量
  * @param cd // 空気抵抗係数
- * @param csa // 矢の断面積
+ * @param csa // 断面積
  * @param ad // 空気の密度
- * @returns {z, y, x, vz, vy} 矢の状態
+ * @param dt // 刻み時間
+ * @returns
  */
 export function stepAirResistanceArrowFlight(
   state: ArrowState,
@@ -114,15 +115,11 @@ export function stepAirResistanceArrowFlight(
   cd: number,
   csa: number,
   ad: number,
-  dt: number = STEP_TIME,
-  moveState: MoveState = { z: 0, x: 0, y: 0 }
+  dt: number = STEP_TIME
 ): ArrowState {
   const { z, y, x, vz, vx, vy } = state
 
-  const relVx = vx - moveState.x
-  const relVy = vy - moveState.y
-  const relVz = vz - moveState.z
-  const v = Math.sqrt(relVx * relVx + relVy * relVy + relVz * relVz)
+  const v = Math.sqrt(vx * vx + vy * vy + vz * vz)
 
   const Fd = airResistance(cd, csa, ad, v) // 空気抵抗
   const az = resistanceAcceleration(Fd, m, vz, v) // 抗力によるz方向加速度
