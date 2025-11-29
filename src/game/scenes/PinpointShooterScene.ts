@@ -31,7 +31,7 @@ const PARABOLA_GRAPH_BASE_X = 50 // グラフの基準Y座標
 const PARABOLA_GRAPH_BASE_Y = 150 // グラフの基準Y座標
 const TARGET_POS_Z = 40 // m
 const TARGET_POS_X = 0 // m
-const TARGET_POS_Y = 1 // m
+const TARGET_POS_Y = 2 // m
 const TARGET_SIZE_W = 2 // m
 const TARGET_SIZE_H = 2 // m
 const TARGET_SIZE_D = 0.1 // m
@@ -74,8 +74,6 @@ export class PinpointShooterScene extends Scene {
   shootStep: number = SHOOT_STEP.INIT
 
   //矢を発射させる角度
-  angleMaterImg!: GameObjects.Image
-  angleMaterArrowImg!: GameObjects.Image
   angleMaterArrowMoveSpeed = ANGLE_MATER_ARROW_MOVE_SPEED
   angleMaterArrowAngle = 0
 
@@ -100,6 +98,11 @@ export class PinpointShooterScene extends Scene {
   scopeMoveButtonRight!: ImageButton
   scopeDirection = 0
   scopeMoveSpeed = SCOPE_MOVE_SPEED
+  scopePosX = 0
+  scopePosY = 0
+
+  //放物線描画のスケール
+  graphScale = 0
 
   //矢を発射させる速度
   v_0 = 0
@@ -108,17 +111,23 @@ export class PinpointShooterScene extends Scene {
   arrowState: ArrowState = {
     z: 0,
     x: 0,
-    y: START_ARROW_HEIGHT,
+    y: 0,
     vz: 0,
     vx: 0,
     vy: 0
   }
-  // 移動状態
+
+  // 開始位置
   moveState: MoveState = { z: 0, x: 0, y: 0 }
 
+  //放物線のグラフ
   arrowMoveParabolaGraph!: GameObjects.Graphics
 
+  //飛距離のポイント
   graphics!: GameObjects.Graphics
+
+  //矢の放物線
+  arrowParabolaPoint!: GameObjects.Graphics
 
   targetPosition = {
     z: TARGET_POS_Z,
@@ -185,14 +194,7 @@ export class PinpointShooterScene extends Scene {
     ).setScale(0.7)
     this.add.existing(this.slotPauseButton)
 
-    this.angleMaterImg = this.add.image(ANGLE_MATER_POS_X, ANGLE_MATER_POS_Y, TextureKey.AngleMater)
-    this.angleMaterArrowImg = this.add
-      .image(ANGLE_MATER_ARROW_POS_X, ANGLE_MATER_ARROW_POS_Y, TextureKey.AngleMaterArrow)
-      .setScale(0.9)
-      .setOrigin(0.15, 0.5)
-      .setAngle(this.angleMaterArrowAngle)
-
-    //風の方向と強さ
+    //風の方向と強さの表示
     this.windDirectionImg = this.add
       .image(this.gameCenterX + 250, this.gameCenterY - 250, TextureKey.WindVector)
       .setScale(0.1)
@@ -206,7 +208,6 @@ export class PinpointShooterScene extends Scene {
       '#000000',
       100
     )
-    this.calcWindDirection()
 
     //スコープ
     this.scopeImg = this.add
@@ -300,6 +301,37 @@ export class PinpointShooterScene extends Scene {
 
     //矢の初期化
     this.initArrowState()
+
+    //矢を飛ばすときに必要な要素のUIの初期化
+    this.initArrowShootUi()
+
+    //グラフィックスの初期化
+    this.initGraphics()
+
+    this.shootStep = SHOOT_STEP.SET_POWER
+    this.debugTexts.replaceVariable(10, this.shootStep)
+  }
+
+  /**
+   * 矢の状態の初期化
+   */
+  private initArrowState() {
+    //矢の開始位置の初期化
+    this.moveState.z = 0
+    this.moveState.x = 0
+    this.moveState.y = START_ARROW_HEIGHT
+
+    //矢の初速の初期化
+    this.v_0 = 0
+
+    //矢の状態を初期化
+    this.arrowState.z = 0
+    this.arrowState.x = 0
+    this.arrowState.y = this.moveState.y
+    this.arrowState.vz = 0
+    this.arrowState.vx = 0
+    this.arrowState.vy = 0
+
     this.debugTexts.replaceVariable(
       1,
       `z: ${this.arrowState.z.toFixed(2)}, x: ${this.arrowState.x.toFixed(
@@ -309,15 +341,42 @@ export class PinpointShooterScene extends Scene {
       )}, vx: ${this.arrowState.vz.toFixed(2)}, vy: ${this.arrowState.vy.toFixed(2)}`
     )
 
-    this.arrowMoveParabolaGraph = this.add.graphics()
-    this.arrowMoveParabolaGraph.clear()
-    this.arrowMoveParabolaGraph.lineStyle(2, 0xff0000, 1)
+    //発射ステップを初期化
+    this.shootStep = SHOOT_STEP.INIT
+  }
 
+  //矢を飛ばすときに必要な要素のUIの初期化
+  private initArrowShootUi() {
+    this.angleMaterArrowAngle = 0
+    this.scopeDirection = 0
+    this.bowDrawDistance = 0
+
+    //パワーバーの位置初期化
+    this.bowDrawPowerBarImg_posY = this.gameCenterY + 220
+    this.bowDrawPowerBarImg.setY(this.bowDrawPowerBarImg_posY)
+
+    //スコープ位置の初期化
+    this.scopePosX = this.gameCenterX + this.angleMaterArrowAngle * SCOPE_MOVE_SPEED
+    this.scopePosY = this.gameCenterY + this.angleMaterArrowAngle * SCOPE_MOVE_SPEED
+
+    this.scopeImg.setX(this.scopePosX)
+    this.scopeImg.setY(this.scopePosY)
+
+    //風の影響を計算
+    this.calcWindDirection()
+  }
+
+  //グラフィックスの初期化
+  private initGraphics() {
+    //放物線グラフの初期化
+    this.arrowMoveParabolaGraph = this.add.graphics()
+    this.arrowMoveParabolaGraph.lineStyle(2, 0xff0000, 1)
     this.arrowMoveParabolaGraph.moveTo(
       PARABOLA_GRAPH_BASE_X + this.arrowState.z * POINT_GRAPH_SCALE,
       PARABOLA_GRAPH_BASE_Y - this.arrowState.y * POINT_GRAPH_SCALE
     )
 
+    //飛距離のポイント初期化
     this.graphics = this.add.graphics()
     this.graphics.fillStyle(0x00ff00, 1) // 緑色、透明度1
 
@@ -338,13 +397,15 @@ export class PinpointShooterScene extends Scene {
       this.graphics.fillCircle(p.x, p.y, 4) // 半径4pxの円
     })
 
-    this.shootStep = SHOOT_STEP.SET_POWER
-    this.debugTexts.replaceVariable(10, this.shootStep)
+    //矢の放物線の初期化
+    this.arrowParabolaPoint = this.add.graphics()
+    this.arrowParabolaPoint.fillStyle(0x00ff00, 1)
   }
 
   update(time: number, delta: number): void {
     if (this.stop) {
       const dt = delta / 1000 // Phaser のフレーム時間
+      //飛んでいる矢の状態の更新
       this.arrowState = stepAirResistanceArrowFlight(
         this.arrowState,
         ARROW_MASS,
@@ -373,6 +434,7 @@ export class PinpointShooterScene extends Scene {
       this.debugTexts.replaceVariable(5, this.angleMaterArrowAngle * -1)
       this.debugTexts.replaceVariable(6, this.bowDrawDistance * BOW_DRAW_DISTANCE)
 
+      // 飛んでいる矢の放物線のグラフ描画更新
       this.arrowMoveParabolaGraph.lineTo(
         PARABOLA_GRAPH_BASE_X + this.arrowState.z * POINT_GRAPH_SCALE,
         PARABOLA_GRAPH_BASE_Y - this.arrowState.y * POINT_GRAPH_SCALE
@@ -380,7 +442,6 @@ export class PinpointShooterScene extends Scene {
       this.arrowMoveParabolaGraph.strokePath()
 
       if (
-        !this.isTargetHit &&
         is3DBoxCollision(
           {
             x: this.arrowState.x - ARROW_HEAD_SIZE / 2,
@@ -403,13 +464,43 @@ export class PinpointShooterScene extends Scene {
         this.isTargetHit = true
         this.stop = false
         this.debugTexts.replaceVariable(7, 'HIT!!!!')
-        console.log(this.arrowState)
+        console.log({
+          x: this.arrowState.x - ARROW_HEAD_SIZE / 2,
+          y: this.arrowState.y - ARROW_HEAD_SIZE / 2,
+          z: this.arrowState.z - ARROW_HEAD_SIZE / 2,
+          width: ARROW_HEAD_SIZE,
+          height: ARROW_HEAD_SIZE,
+          depth: ARROW_HEAD_SIZE
+        })
+        console.log({
+          x: this.targetPosition.x - TARGET_SIZE_W / 2,
+          y: this.targetPosition.y - TARGET_SIZE_H / 2,
+          z: this.targetPosition.z - TARGET_SIZE_D / 2,
+          width: TARGET_SIZE_W,
+          height: TARGET_SIZE_H,
+          depth: TARGET_SIZE_D
+        })
       }
 
       if (this.arrowState.y <= 0) {
         this.stop = false
         this.debugTexts.replaceVariable(7, 'Failure')
-        console.log(this.arrowState)
+        console.log({
+          x: this.arrowState.x - ARROW_HEAD_SIZE / 2,
+          y: this.arrowState.y - ARROW_HEAD_SIZE / 2,
+          z: this.arrowState.z - ARROW_HEAD_SIZE / 2,
+          width: ARROW_HEAD_SIZE,
+          height: ARROW_HEAD_SIZE,
+          depth: ARROW_HEAD_SIZE
+        })
+        console.log({
+          x: this.targetPosition.x - TARGET_SIZE_W / 2,
+          y: this.targetPosition.y - TARGET_SIZE_H / 2,
+          z: this.targetPosition.z - TARGET_SIZE_D / 2,
+          width: TARGET_SIZE_W,
+          height: TARGET_SIZE_H,
+          depth: TARGET_SIZE_D
+        })
       }
     } else {
       this.updateShootStep()
@@ -435,8 +526,11 @@ export class PinpointShooterScene extends Scene {
       ).toFixed(2)}, y: ${(this.arrowState.y * POINT_GRAPH_SCALE).toFixed(2)}`
     )
 
-    this.arrowMoveParabolaGraph.clear()
-    this.arrowMoveParabolaGraph.lineStyle(2, 0xff0000, 1)
+    // グラフィックスのクリア
+    this.clearGraphics()
+
+    //矢を飛ばすときに必要な要素のUIの初期化
+    this.initArrowShootUi()
 
     this.isTargetHit = false
     this.debugTexts.replaceVariable(5, '')
@@ -466,7 +560,6 @@ export class PinpointShooterScene extends Scene {
         break
       case SHOOT_STEP.SHOOT:
         this.start()
-        console.log(this.arrowState)
         break
     }
   }
@@ -477,40 +570,18 @@ export class PinpointShooterScene extends Scene {
   private start() {
     this.stop = true
     this.setShootParam()
+
+    //矢の発射位置
+    this.arrowState.x = this.moveState.x
+    this.arrowState.y = this.moveState.y
     // 風の影響を初速に加算
-    this.arrowState.x = this.scopeDirection * 0.1
     this.arrowState.vx += this.windDirectionX
     this.arrowState.vz += this.windDirectionZ
     this.shootStep = SHOOT_STEP.INIT
-  }
 
-  /**
-   * 矢の状態の初期化
-   */
-  private initArrowState() {
-    this.bowDrawPowerBarImg_posY = this.gameCenterY + 220
-    this.bowDrawPowerBarImg.setY(this.bowDrawPowerBarImg_posY)
-    this.angleMaterArrowAngle = 0
-    this.angleMaterArrowImg.setAngle(this.angleMaterArrowAngle)
-    this.bowDrawDistance = 0
-    this.v_0 = 0
-
-    this.scopeImg.setY(this.gameCenterY)
-    this.scopeImg.setX(this.gameCenterX)
-
-    //矢の状態を初期化
-    this.arrowState.z = 0
-    this.arrowState.x = 0
-    this.arrowState.y = START_ARROW_HEIGHT
-    this.arrowState.vz = 0
-    this.arrowState.vx = 0
-    this.arrowState.vy = 0
-
-    //風の影響を計算
-    this.calcWindDirection()
-
-    //発射ステップを初期化
-    this.shootStep = SHOOT_STEP.INIT
+    console.log(this.arrowState)
+    console.log(this.scopePosX, this.scopePosY)
+    this.arrowParabolaPoint.fillCircle(this.scopePosX, this.scopePosY, 4)
   }
 
   /**
@@ -532,24 +603,21 @@ export class PinpointShooterScene extends Scene {
    * 矢を発射させる角度
    */
   private setAngleMaterArrowAngle(isUp: boolean) {
-    this.angleMaterArrowAngle += isUp
-      ? -this.angleMaterArrowMoveSpeed
-      : this.angleMaterArrowMoveSpeed
+    this.angleMaterArrowAngle += isUp ? -ANGLE_MATER_ARROW_MOVE_SPEED : ANGLE_MATER_ARROW_MOVE_SPEED
 
     if (this.angleMaterArrowAngle <= -60) {
       this.angleMaterArrowAngle = -60
     } else if (this.angleMaterArrowAngle > 20) {
       this.angleMaterArrowAngle = 20
     }
-    this.angleMaterArrowImg.setAngle(this.angleMaterArrowAngle)
 
     this.debugTexts.replaceVariable(8, this.angleMaterArrowAngle * -1)
-    const scopePosY = this.gameCenterY + this.angleMaterArrowAngle * SCOPE_MOVE_SPEED
-    this.scopeImg.setY(scopePosY)
+    this.scopePosY = this.gameCenterY + this.angleMaterArrowAngle * SCOPE_MOVE_SPEED
+    this.scopeImg.setY(this.scopePosY)
   }
 
   /**
-   * 矢を発射させる方向
+   * 矢を発射させる方向 x軸
    */
   private setArrowDirection(isRight: boolean) {
     this.scopeDirection += isRight ? SCOPE_MOVE_SPEED : -SCOPE_MOVE_SPEED
@@ -560,8 +628,9 @@ export class PinpointShooterScene extends Scene {
       this.scopeDirection = 20
     }
 
-    const scopePosX = this.gameCenterX + this.scopeDirection * SCOPE_MOVE_SPEED
-    this.scopeImg.setX(scopePosX)
+    this.scopePosX = this.gameCenterX + this.scopeDirection * SCOPE_MOVE_SPEED
+    this.moveState.x = this.scopeDirection * SCOPE_MOVE_SPEED * 0.1
+    this.scopeImg.setX(this.scopePosX)
   }
 
   /**
@@ -599,5 +668,16 @@ export class PinpointShooterScene extends Scene {
 
     this.windDirectionZ = Fz
     this.windDirectionX = Fx
+  }
+
+  // グラフィックスのクリア
+  private clearGraphics() {
+    //飛んでいる矢の放物線のグラフ描画を消す
+    this.arrowMoveParabolaGraph.clear()
+    this.arrowMoveParabolaGraph.lineStyle(2, 0xff0000, 1)
+
+    //飛んでいる矢の放物線の描画を消す
+    this.arrowParabolaPoint.clear()
+    this.arrowParabolaPoint.lineStyle(2, 0xff0000, 1)
   }
 }
