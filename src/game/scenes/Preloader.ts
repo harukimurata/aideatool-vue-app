@@ -89,6 +89,21 @@ export class Preloader extends Scene {
     this.load.image(TextureKey.Scope, 'image/pinpointShooter/scope.png')
     this.load.image(TextureKey.ScopeArrowOff, 'image/pinpointShooter/scope_arrow_off.png')
     this.load.image(TextureKey.ScopeArrowOn, 'image/pinpointShooter/scope_arrow_on.png')
+    this.load.image(TextureKey.Leaf1, 'image/pinpointShooter/leaf1.png')
+    this.load.image(TextureKey.Leaf2, 'image/pinpointShooter/leaf2.png')
+    this.load.image(TextureKey.Leaf3, 'image/pinpointShooter/leaf3.png')
+    this.load.image(TextureKey.Leaf4, 'image/pinpointShooter/leaf4.png')
+    this.load.image(TextureKey.Leaf5, 'image/pinpointShooter/leaf5.png')
+    this.load.image(TextureKey.Leaf6, 'image/pinpointShooter/leaf6.png')
+    this.load.image(TextureKey.Leaf7, 'image/pinpointShooter/leaf7.png')
+    this.load.image(TextureKey.Leaf8, 'image/pinpointShooter/leaf8.png')
+    this.load.image(TextureKey.PinpointShooterBg, 'image/pinpointShooter/pinpoint_shooter_bg.png')
+    this.load.image(TextureKey.ParabolaGraphBg, 'image/pinpointShooter/parabola_graph_bg.png')
+    this.load.image(TextureKey.HitArea, 'image/pinpointShooter/hit_area.png')
+    this.load.image(TextureKey.HitAreaHut, 'image/pinpointShooter/hit_area_hut.png')
+    this.load.image(TextureKey.HitSample, 'image/pinpointShooter/hit_sample.png')
+    this.load.image(TextureKey.HitSamplePedestal, 'image/pinpointShooter/hit_sample_pedestal.png')
+    this.load.image(TextureKey.HitObject, 'image/pinpointShooter/hit_object.png')
   }
 
   create() {
