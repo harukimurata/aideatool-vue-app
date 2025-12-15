@@ -52,7 +52,22 @@ enum TextureKey {
   WindVector = 'wind_vector',
   Scope = 'scope',
   ScopeArrowOff = 'scope_arrow_off',
-  ScopeArrowOn = 'scope_arrow_on'
+  ScopeArrowOn = 'scope_arrow_on',
+  Leaf1 = 'leaf1',
+  Leaf2 = 'leaf2',
+  Leaf3 = 'leaf3',
+  Leaf4 = 'leaf4',
+  Leaf5 = 'leaf5',
+  Leaf6 = 'leaf6',
+  Leaf7 = 'leaf7',
+  Leaf8 = 'leaf8',
+  PinpointShooterBg = 'pinpoint_shooter_bg',
+  ParabolaGraphBg = 'parabola_graph_bg',
+  HitArea = 'hit_area',
+  HitAreaHut = 'hit_area_hut',
+  HitSample = 'hit_sample',
+  HitSamplePedestal = 'hit_sample_pedestal',
+  HitObject = 'hit_object'
 }
 
 export default TextureKey
