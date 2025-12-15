@@ -14,6 +14,8 @@ import {
 } from '../logic/physics'
 import { generateRandomInt, generateRandomFloat } from '../utils'
 import UiText from '../components/UiText'
+import UiContainer from '../sceneLogic/pinpointShoot/ui'
+import FortuneSlip from '../sceneLogic/fortuneSlip'
 
 const BOW_SPRING_CONSTANT = 300 // N/m
 const ARROW_HEAD_SIZE = 0.03 // m
@@ -27,8 +29,8 @@ const AIR_DENSITY = 1.225 // kg/m^3
 const MOVE_SPEED_X = 0 // km/h
 const GRAVITY = 9.8 // m/s^2
 const POINT_GRAPH_SCALE = 10 // グラフのスケール
-const PARABOLA_GRAPH_BASE_X = 50 // グラフの基準Y座標
-const PARABOLA_GRAPH_BASE_Y = 150 // グラフの基準Y座標
+const PARABOLA_GRAPH_BASE_X = 70 // グラフの基準Y座標
+const PARABOLA_GRAPH_BASE_Y = 120 // グラフの基準Y座標
 const TARGET_POS_Z = 40 // m
 const TARGET_POS_X = 0 // m
 const TARGET_POS_Y = 2 // m
@@ -52,16 +54,27 @@ const SHOOT_STEP = {
   SHOOT: 2
 }
 
-export class PinpointShooterScene extends Scene {
-  // ゲーム内時間
-  private worldTime = 0
+const RESULT_IMAGE_KEYS: string[] = [
+  TextureKey.NengaAtari_1,
+  TextureKey.NengaAtari_2,
+  TextureKey.NengaAtari_3
+]
 
+export class PinpointShooterScene extends Scene {
   private stop = false
 
   private gameWidth = 0
   private gameHeight = 0
   private gameCenterX = 0
   private gameCenterY = 0
+
+  uiContainer!: UiContainer
+  fortuneSlip!: FortuneSlip
+
+  pinpointShooterBg!: GameObjects.Image
+  hitArea!: GameObjects.Image
+  hitAreaHut!: GameObjects.Image
+  hitSample!: GameObjects.Image
 
   // デバッグ用テキスト
   private debugTexts!: DebugTexts
@@ -86,20 +99,15 @@ export class PinpointShooterScene extends Scene {
   windDirectionZ = 0
   windDirectionX = 0
   windDirectionImg!: GameObjects.Image
-  windForce = 0
   windForceText!: UiText
 
   //スコープ移動ボタン
-  scopeImg!: GameObjects.Image
   scopeMoveButtonUp!: ImageButton
   scopeMoveButtonDown!: ImageButton
   scopeMoveButtonLeft!: ImageButton
   scopeMoveButtonRight!: ImageButton
   scopePosX = 0
   scopePosY = 0
-
-  //放物線描画のスケール
-  graphScale = 0
 
   //矢を発射させる速度
   v_0 = 0
@@ -116,15 +124,7 @@ export class PinpointShooterScene extends Scene {
 
   // 開始位置
   moveState: MoveState = { z: 0, x: 0, y: 0 }
-
-  //放物線のグラフ
-  arrowMoveParabolaGraph!: GameObjects.Graphics
-
-  //飛距離のポイント
-  graphics!: GameObjects.Graphics
-
-  //矢の放物線
-  arrowParabola!: GameObjects.Graphics
+  lastArrowPosZ = 0
 
   targetPosition = {
     z: TARGET_POS_Z,
@@ -140,37 +140,54 @@ export class PinpointShooterScene extends Scene {
   create() {
     EventBus.emit('current-scene-ready', this)
 
-    //ゲーム内の時間
-    this.worldTime = this.time.now
-
     // 画面サイズ
     this.gameWidth = this.scale.width
     this.gameHeight = this.scale.height
     this.gameCenterX = this.gameWidth / 2
     this.gameCenterY = this.gameHeight / 2
 
-    this.add.image(this.gameWidth / 2, this.gameHeight / 2, TextureKey.DefaultBg)
+    this.pinpointShooterBg = this.add
+      .image(this.gameCenterX, this.gameCenterY, TextureKey.PinpointShooterBg)
+      .setScale(0.26)
+
+    this.hitAreaHut = this.add
+      .image(this.gameCenterX, this.gameCenterY, TextureKey.HitAreaHut)
+      .setScale(0.25)
+
+    this.hitArea = this.add
+      .image(this.gameCenterX, this.gameCenterY, TextureKey.HitArea)
+      .setScale(0.02)
+
+    //UIをまとめているクラス
+    this.uiContainer = new UiContainer(this)
+    this.uiContainer.init()
+
+    //おみくじの管理
+    this.fortuneSlip = new FortuneSlip(this)
+    this.fortuneSlip.init(TextureKey.NengaHazure, () => {
+      console.log('おみくじ')
+    })
 
     //デバッグテキスト
     this.debugTexts = new DebugTexts()
     this.debugTexts.init(this, [
       'Pinpoint Shooter Scene',
       'flightDistance: {1}',
-      'px arrowFlightDistance: {1}',
+      '',
       `Target z:${TARGET_POS_Z}, x:${TARGET_POS_X}, y:${TARGET_POS_Y}`,
       'WindAngle: {1}',
       '',
-      'Shoot Power: {1}',
+      '',
       'Target is : {1}',
       'Arrow Angle: {1}',
-      'Bow Draw Distance: {1}',
+      '',
       'Shoot Step: {1}'
     ])
 
     this.slotResetButton = new ImageButton(
       this,
-      this.gameWidth / 2,
-      this.gameHeight / 2 + 200,
+      this.gameCenterX,
+      this.gameCenterY + 200,
       TextureKey.SlotBetA,
       TextureKey.SlotBetB,
       () => {
@@ -181,8 +198,8 @@ export class PinpointShooterScene extends Scene {
 
     this.slotPauseButton = new ImageButton(
       this,
-      this.gameWidth / 2,
-      this.gameHeight / 2 + 300,
+      this.gameCenterX,
+      this.gameCenterY + 300,
       TextureKey.SlotStartA,
       TextureKey.SlotStartB,
       () => {
@@ -193,12 +210,12 @@ export class PinpointShooterScene extends Scene {
 
     //風の方向と強さの表示
     this.windDirectionImg = this.add
-      .image(this.gameCenterX + 250, this.gameCenterY - 250, TextureKey.WindVector)
+      .image(this.gameCenterX + 250, this.gameCenterY - 190, TextureKey.WindVector)
       .setScale(0.1)
     this.windForceText = new UiText(
       this,
-      this.gameCenterX + 230,
-      this.gameCenterY - 220,
+      this.gameCenterX + 235,
+      this.gameCenterY - 160,
       '',
       'Arial',
       '16px',
@@ -207,10 +224,6 @@ export class PinpointShooterScene extends Scene {
     )
 
     //スコープ
-    this.scopeImg = this.add
-      .image(this.gameCenterX, this.gameCenterY, TextureKey.Scope)
-      .setScale(0.25)
-
     this.scopeMoveButtonUp = new ImageButton(
       this,
       100,
@@ -273,13 +286,8 @@ export class PinpointShooterScene extends Scene {
       .setAngle(270)
     this.add.existing(this.scopeMoveButtonLeft)
 
-    //矢のパワーバー
-    this.add
-      .image(this.gameCenterX + 250, this.gameCenterY + 30, TextureKey.PowerLevel)
-      .setScale(0.2)
-
     //パワーバーの範囲-155 ~ 220
-    this.bowDrawPowerBarImg_posY = this.gameCenterY + 220
+    this.bowDrawPowerBarImg_posY = this.gameCenterY + 250
     this.bowDrawPowerBarImg = this.add
       .image(this.gameCenterX + 250, this.bowDrawPowerBarImg_posY, TextureKey.PowerBar)
       .setScale(0.2)
@@ -289,9 +297,6 @@ export class PinpointShooterScene extends Scene {
 
     //矢を飛ばすときに必要な要素のUIの初期化
     this.initArrowShootUi()
-
-    //グラフィックスの初期化
-    this.initGraphics()
 
     this.shootStep = SHOOT_STEP.SET_POWER
     this.debugTexts.replaceVariable(10, this.shootStep)
@@ -342,50 +347,22 @@ export class PinpointShooterScene extends Scene {
     )
 
     //パワーバーの位置初期化
-    this.bowDrawPowerBarImg_posY = this.gameCenterY + 220
+    this.bowDrawPowerBarImg_posY = this.gameCenterY + 250
     this.bowDrawPowerBarImg.setY(this.bowDrawPowerBarImg_posY)
 
     //スコープ位置の初期化
     this.scopePosX = this.gameCenterX
     this.scopePosY = this.gameCenterY
 
-    this.scopeImg.setX(this.scopePosX)
-    this.scopeImg.setY(this.scopePosY)
+    this.pinpointShooterBg.setX(this.scopePosX)
+    this.pinpointShooterBg.setY(this.scopePosY)
+    this.hitArea.setX(this.scopePosX)
+    this.hitArea.setY(this.scopePosY)
+    this.hitAreaHut.setX(this.scopePosX)
+    this.hitAreaHut.setY(this.scopePosY)
 
     //風の影響を計算
     this.calcWindDirection()
-  }
-
-  //グラフィックスの初期化
-  private initGraphics() {
-    //放物線グラフの初期化
-    this.arrowMoveParabolaGraph = this.add.graphics()
-    this.arrowMoveParabolaGraph.lineStyle(2, 0xff0000, 1)
-
-    //飛距離のポイント初期化
-    this.graphics = this.add.graphics()
-    this.graphics.fillStyle(0x00ff00, 1) // 緑色、透明度1
-
-    const points = [
-      { x: 50, y: 150 }, //0
-      { x: 100, y: 150 }, //5      { x: 150, y: 150 },
-      { x: 150, y: 150 }, //5      { x: 150, y: 150 },
-      { x: 200, y: 150 }, //10
-      { x: 250, y: 150 }, //15
-      { x: 300, y: 150 }, //20
-      { x: 350, y: 150 }, //25
-      { x: 400, y: 150 }, //30
-      { x: 450, y: 150 }, //35
-      { x: 500, y: 150 } //40
-    ]
-
-    points.forEach((p) => {
-      this.graphics.fillCircle(p.x, p.y, 4) // 半径4pxの円
-    })
-
-    //矢の放物線の初期化
-    this.arrowParabola = this.add.graphics()
-    this.arrowParabola.lineStyle(2, 0x00ff00, 1)
   }
 
   update(time: number, delta: number): void {
@@ -410,28 +387,8 @@ export class PinpointShooterScene extends Scene {
         )}, vx: ${this.arrowState.vx.toFixed(2)}, vy: ${this.arrowState.vy.toFixed(2)}`
       )
 
-      this.debugTexts.replaceVariable(
-        2,
-        `z: ${(this.arrowState.z * 10).toFixed(2)}, x: ${(this.arrowState.x * 10).toFixed(
-          2
-        )}, y: ${(this.arrowState.y * 10).toFixed(2)}`
-      )
-
-      this.debugTexts.replaceVariable(6, this.bowDrawDistance * BOW_DRAW_DISTANCE)
-
       // 矢の放物線のグラフ描画更新
-      this.arrowMoveParabolaGraph.lineTo(
-        PARABOLA_GRAPH_BASE_X + this.arrowState.z * POINT_GRAPH_SCALE,
-        PARABOLA_GRAPH_BASE_Y - this.arrowState.y * POINT_GRAPH_SCALE
-      )
-      this.arrowMoveParabolaGraph.strokePath()
-
-      // 飛んでいる矢の放物線描画更新
-      this.arrowParabola.lineTo(
-        this.gameCenterX + this.arrowState.x * POINT_GRAPH_SCALE,
-        this.gameCenterY - this.arrowState.y * POINT_GRAPH_SCALE
-      )
-      this.arrowParabola.strokePath()
+      this.uiContainer.arrowMoveParabolaGraphUpdate(this.arrowState.z, this.arrowState.y)
 
       let result = is3DBoxCollision(
         {
@@ -456,12 +413,18 @@ export class PinpointShooterScene extends Scene {
         this.isTargetHit = true
         this.stop = false
         this.debugTexts.replaceVariable(7, 'HIT!!!!')
+
+        this.fortuneSlip.setResult(TextureKey.NengaAtari_1)
+        this.fortuneSlip.animation()
       }
 
       if (this.arrowState.y <= 0) {
         this.stop = false
         this.debugTexts.replaceVariable(7, 'Failure')
         console.log(result)
+
+        this.fortuneSlip.setResult()
+        this.fortuneSlip.animation()
       }
     } else {
       this.updateShootStep()
@@ -480,21 +443,13 @@ export class PinpointShooterScene extends Scene {
       )}, vx: ${this.arrowState.vx.toFixed(2)}, vy: ${this.arrowState.vy.toFixed(2)}`
     )
 
-    this.debugTexts.replaceVariable(
-      2,
-      `z: ${(this.arrowState.z * POINT_GRAPH_SCALE).toFixed(2)}, x: ${(
-        this.arrowState.x * POINT_GRAPH_SCALE
-      ).toFixed(2)}, y: ${(this.arrowState.y * POINT_GRAPH_SCALE).toFixed(2)}`
-    )
-
     // グラフィックスのクリア
-    this.clearGraphics()
+    this.uiContainer.arrowMoveParabolaGraphClear()
 
     //矢を飛ばすときに必要な要素のUIの初期化
     this.initArrowShootUi()
 
     this.isTargetHit = false
-    this.debugTexts.replaceVariable(6, '')
 
     this.shootStep = SHOOT_STEP.SET_POWER
     this.debugTexts.replaceVariable(10, this.shootStep)
@@ -542,15 +497,7 @@ export class PinpointShooterScene extends Scene {
     this.shootStep = SHOOT_STEP.INIT
 
     //飛んでいる矢の放物線グラフの開始位置
-    this.arrowMoveParabolaGraph.beginPath()
-    this.arrowMoveParabolaGraph.moveTo(
-      PARABOLA_GRAPH_BASE_X + this.arrowState.z * POINT_GRAPH_SCALE,
-      PARABOLA_GRAPH_BASE_Y - this.arrowState.y * POINT_GRAPH_SCALE
-    )
-
-    // 飛んでいる矢の放物線の開始位置
-    this.arrowParabola.beginPath()
-    this.arrowParabola.moveTo(this.gameCenterX, this.gameCenterY)
+    this.uiContainer.arrowMoveParabolaGraphInit(this.arrowState.z, this.arrowState.y)
   }
 
   /**
@@ -589,8 +536,10 @@ export class PinpointShooterScene extends Scene {
       8,
       `${this.arrowVerticalAngle * -1}, ${this.arrowHorizontalAngle}`
     )
-    this.scopePosY = this.gameCenterY + this.arrowVerticalAngle * SCOPE_MOVE_SPEED
-    this.scopeImg.setY(this.scopePosY)
+    this.scopePosY = this.gameCenterY + this.arrowVerticalAngle * SCOPE_MOVE_SPEED * -1
+    this.pinpointShooterBg.setY(this.scopePosY)
+    this.hitAreaHut.setY(this.scopePosY)
+    this.hitArea.setY(this.scopePosY)
   }
 
   /**
@@ -609,8 +558,10 @@ export class PinpointShooterScene extends Scene {
       8,
       `${this.arrowVerticalAngle * -1}, ${this.arrowHorizontalAngle}`
     )
-    this.scopePosX = this.gameCenterX + this.arrowHorizontalAngle * SCOPE_MOVE_SPEED
-    this.scopeImg.setX(this.scopePosX)
+    this.scopePosX = this.gameCenterX + this.arrowHorizontalAngle * SCOPE_MOVE_SPEED * -1
+    this.pinpointShooterBg.setX(this.scopePosX)
+    this.hitAreaHut.setX(this.scopePosX)
+    this.hitArea.setX(this.scopePosX)
   }
 
   /**
@@ -618,7 +569,6 @@ export class PinpointShooterScene extends Scene {
    */
   private setBowDrawDistance() {
     this.bowDrawDistance += this.bowDrawDistanceMoveSpeed
-    this.debugTexts.replaceVariable(9, this.bowDrawDistance)
 
     this.bowDrawPowerBarImg_posY -= BOW_DRAW_POWER_BAR_MOVE_VALUE * this.bowDrawDistanceMoveSpeed
     this.bowDrawPowerBarImg.setY(this.bowDrawPowerBarImg_posY)
@@ -648,16 +598,6 @@ export class PinpointShooterScene extends Scene {
 
     this.windDirectionZ = Fz
     this.windDirectionX = Fx
-  }
-
-  // グラフィックスのクリア
-  private clearGraphics() {
-    //飛んでいる矢の放物線のグラフ描画を消す
-    this.arrowMoveParabolaGraph.clear()
-    this.arrowMoveParabolaGraph.lineStyle(2, 0xff0000, 1)
-
-    //飛んでいる矢の放物線の描画を消す
-    this.arrowParabola.clear()
-    this.arrowParabola.lineStyle(2, 0x00ff00, 1)
+    console.log('windDirectionX', this.windDirectionX, 'windDirectionZ', this.windDirectionZ)
   }
 }
