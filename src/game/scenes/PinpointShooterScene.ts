@@ -76,10 +76,6 @@ export class PinpointShooterScene extends Scene {
   hitAreaHut!: GameObjects.Image
   hitSample!: GameObjects.Image
 
-  // デバッグ用テキスト
-  private debugTexts!: DebugTexts
-
-  slotResetButton!: ImageButton
   slotPauseButton!: ImageButton
 
   //発射までのステップ
@@ -166,35 +162,8 @@ export class PinpointShooterScene extends Scene {
     this.fortuneSlip = new FortuneSlip(this)
     this.fortuneSlip.init(TextureKey.NengaHazure, () => {
       console.log('おみくじ')
+      this.reset()
     })
-
-    //デバッグテキスト
-    this.debugTexts = new DebugTexts()
-    this.debugTexts.init(this, [
-      'Pinpoint Shooter Scene',
-      'flightDistance: {1}',
-      '',
-      `Target z:${TARGET_POS_Z}, x:${TARGET_POS_X}, y:${TARGET_POS_Y}`,
-      'WindAngle: {1}',
-      '',
-      '',
-      'Target is : {1}',
-      'Arrow Angle: {1}',
-      '',
-      'Shoot Step: {1}'
-    ])
-
-    this.slotResetButton = new ImageButton(
-      this,
-      this.gameCenterX,
-      this.gameCenterY + 200,
-      TextureKey.SlotBetA,
-      TextureKey.SlotBetB,
-      () => {
-        this.reset()
-      }
-    ).setScale(0.7)
-    this.add.existing(this.slotResetButton)
 
     this.slotPauseButton = new ImageButton(
       this,
@@ -299,7 +268,6 @@ export class PinpointShooterScene extends Scene {
     this.initArrowShootUi()
 
     this.shootStep = SHOOT_STEP.SET_POWER
-    this.debugTexts.replaceVariable(10, this.shootStep)
   }
 
   /**
@@ -322,15 +290,6 @@ export class PinpointShooterScene extends Scene {
     this.arrowState.vx = 0
     this.arrowState.vy = 0
 
-    this.debugTexts.replaceVariable(
-      1,
-      `z: ${this.arrowState.z.toFixed(2)}, x: ${this.arrowState.x.toFixed(
-        2
-      )}, y: ${this.arrowState.y.toFixed(2)}, vz: ${this.arrowState.vz.toFixed(
-        2
-      )}, vx: ${this.arrowState.vz.toFixed(2)}, vy: ${this.arrowState.vy.toFixed(2)}`
-    )
-
     //発射ステップを初期化
     this.shootStep = SHOOT_STEP.INIT
   }
@@ -340,11 +299,6 @@ export class PinpointShooterScene extends Scene {
     this.arrowVerticalAngle = 0
     this.arrowHorizontalAngle = 0
     this.bowDrawDistance = 0
-
-    this.debugTexts.replaceVariable(
-      8,
-      `${this.arrowVerticalAngle * -1}, ${this.arrowHorizontalAngle}`
-    )
 
     //パワーバーの位置初期化
     this.bowDrawPowerBarImg_posY = this.gameCenterY + 250
@@ -378,15 +332,6 @@ export class PinpointShooterScene extends Scene {
         dt
       )
 
-      this.debugTexts.replaceVariable(
-        1,
-        `z: ${this.arrowState.z.toFixed(2)}, x: ${this.arrowState.x.toFixed(
-          2
-        )}, y: ${this.arrowState.y.toFixed(2)}, vz: ${this.arrowState.vz.toFixed(
-          2
-        )}, vx: ${this.arrowState.vx.toFixed(2)}, vy: ${this.arrowState.vy.toFixed(2)}`
-      )
-
       // 矢の放物線のグラフ描画更新
       this.uiContainer.arrowMoveParabolaGraphUpdate(this.arrowState.z, this.arrowState.y)
 
@@ -412,15 +357,21 @@ export class PinpointShooterScene extends Scene {
         console.log(result)
         this.isTargetHit = true
         this.stop = false
-        this.debugTexts.replaceVariable(7, 'HIT!!!!')
 
         this.fortuneSlip.setResult(TextureKey.NengaAtari_1)
         this.fortuneSlip.animation()
       }
 
+      if (this.arrowState.z > 45) {
+        this.stop = false
+        console.log(result)
+
+        this.fortuneSlip.setResult()
+        this.fortuneSlip.animation()
+      }
+
       if (this.arrowState.y <= 0) {
         this.stop = false
-        this.debugTexts.replaceVariable(7, 'Failure')
         console.log(result)
 
         this.fortuneSlip.setResult()
@@ -434,14 +385,6 @@ export class PinpointShooterScene extends Scene {
   //リセット処理
   private reset() {
     this.initArrowState()
-    this.debugTexts.replaceVariable(
-      1,
-      `z: ${this.arrowState.z.toFixed(2)}, x: ${this.arrowState.x.toFixed(
-        2
-      )}, y: ${this.arrowState.y.toFixed(2)}, vz: ${this.arrowState.vz.toFixed(
-        2
-      )}, vx: ${this.arrowState.vx.toFixed(2)}, vy: ${this.arrowState.vy.toFixed(2)}`
-    )
 
     // グラフィックスのクリア
     this.uiContainer.arrowMoveParabolaGraphClear()
@@ -452,7 +395,6 @@ export class PinpointShooterScene extends Scene {
     this.isTargetHit = false
 
     this.shootStep = SHOOT_STEP.SET_POWER
-    this.debugTexts.replaceVariable(10, this.shootStep)
   }
 
   /**
@@ -461,7 +403,6 @@ export class PinpointShooterScene extends Scene {
   private incrementShootStep() {
     if (!this.stop) {
       this.shootStep++
-      this.debugTexts.replaceVariable(10, this.shootStep)
     }
   }
 
@@ -532,10 +473,6 @@ export class PinpointShooterScene extends Scene {
       this.arrowVerticalAngle = 20
     }
 
-    this.debugTexts.replaceVariable(
-      8,
-      `${this.arrowVerticalAngle * -1}, ${this.arrowHorizontalAngle}`
-    )
     this.scopePosY = this.gameCenterY + this.arrowVerticalAngle * SCOPE_MOVE_SPEED * -1
     this.pinpointShooterBg.setY(this.scopePosY)
     this.hitAreaHut.setY(this.scopePosY)
@@ -554,10 +491,6 @@ export class PinpointShooterScene extends Scene {
       this.arrowHorizontalAngle = 20
     }
 
-    this.debugTexts.replaceVariable(
-      8,
-      `${this.arrowVerticalAngle * -1}, ${this.arrowHorizontalAngle}`
-    )
     this.scopePosX = this.gameCenterX + this.arrowHorizontalAngle * SCOPE_MOVE_SPEED * -1
     this.pinpointShooterBg.setX(this.scopePosX)
     this.hitAreaHut.setX(this.scopePosX)
@@ -590,11 +523,6 @@ export class PinpointShooterScene extends Scene {
     const angle = ((angleDeg - 90) * Math.PI) / 180 // 度→ラジアン変換
     const Fx = F * Math.cos(angle) // x方向
     const Fz = F * Math.sin(angle) * -1 // z方向
-
-    this.debugTexts.replaceVariable(
-      4,
-      `${angleDeg} deg (Fx[wD_X] ${Fx.toFixed(2)}, Fz[wD_Z] ${Fz.toFixed(2)})`
-    )
 
     this.windDirectionZ = Fz
     this.windDirectionX = Fx
