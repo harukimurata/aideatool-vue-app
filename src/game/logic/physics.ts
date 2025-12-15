@@ -72,7 +72,7 @@ export function arrowInitialVelocity(k: number, d: number, m: number, eta: numbe
 export function arrowFlightDistance(k: number, x: number, m: number, thetaDeg: number): number {
   const v_0 = arrowInitialVelocity(k, x, m)
   const theta = (thetaDeg * Math.PI) / 180
-  return (v_0 * v_0 * theta) / GRAVITY
+  return (v_0 * v_0 * Math.sin(2 * theta)) / GRAVITY
 }
 
 /**
@@ -119,7 +119,7 @@ export function stepAirResistanceArrowFlight(
 ): ArrowState {
   const { z, y, x, vz, vx, vy } = state
 
-  const v = Math.sqrt(vx * vx + vy * vy + vz * vz)
+  const v = Math.sqrt(vx * vx + vy * vy + vz * vz) // 速度の大きさ
 
   const Fd = airResistance(cd, csa, ad, v) // 空気抵抗
   const az = resistanceAcceleration(Fd, m, vz, v) // 抗力によるz方向加速度
@@ -134,12 +134,14 @@ export function stepAirResistanceArrowFlight(
   const newX = x + newVx * dt
   const newY = y + newVy * dt
 
+  const clampedY = Math.max(0, newY)
+  const finalVy = clampedY === 0 ? 0 : newVy
   return {
     z: newZ,
     x: newX,
-    y: Math.max(0, newY), // 地面以下は0に固定
+    y: clampedY,
     vz: newVz,
     vx: newVx,
-    vy: newVy
+    vy: finalVy
   }
 }
