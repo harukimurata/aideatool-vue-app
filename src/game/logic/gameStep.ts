@@ -1,3 +1,31 @@
+/**
+ * ゲームの進行ステップを管理するクラス
+ * 
+ * 使い方
+ * constやenumで定義は必要になるが進捗の管理はできる
+ * const SHOOT_STEP_NAMES = ['INIT', 'GAME_MAIN', 'RESULT', 'FINISH']
+    enum SHOOT_STEP {
+    INIT,
+    GAME_MAIN,
+    RESULT,
+    FINISH
+    }
+
+    switch (this.gameStep.getCurrentStep()) {
+      case SHOOT_STEP.INIT:
+        this.initGame()
+        break
+      case SHOOT_STEP.GAME_MAIN:
+        this.gameMain()
+        break
+      case SHOOT_STEP.RESULT:
+        this.gameResult(delta)
+      case SHOOT_STEP.FINISH:
+        //何もしない 結果表示
+        break
+    }
+ */
+
 export default class GameStep {
   private static instance: GameStep
 
