@@ -24,11 +24,11 @@ export default class FortuneSlip extends Phaser.GameObjects.Group {
   }
 
   /**
-   * 初期化
+   * 初期化とおみくじ引いた後のボタン設定
    */
-  public init(fortuneSlipImage: string, onClickFunc?: Function) {
+  public init(onClickFunc?: Function) {
     this.scratchResult = this.scene.add
-      .image(this.gameCenterX, this.gameCenterY, fortuneSlipImage)
+      .image(this.gameCenterX, this.gameCenterY, '')
       .setAlpha(0)
       .setVisible(false)
 
@@ -40,10 +40,10 @@ export default class FortuneSlip extends Phaser.GameObjects.Group {
       TextureKey.NengaRetry,
       TextureKey.NengaRetry,
       () => {
+        this.scratchResult.setAlpha(0).setScale(0.2).setVisible(false)
+        this.initButton.setScale(0.2).setVisible(false)
         if (onClickFunc != null) {
           onClickFunc()
-          this.scratchResult.setAlpha(0).setScale(0.2).setVisible(false)
-          this.initButton.setScale(0.2).setVisible(false)
         }
       }
     ).setScale(0.2)
