@@ -1,5 +1,7 @@
 import { GameObjects } from 'phaser'
+import ImageButton from '../../components/ImageButton'
 import TextureKey from '../../const/TextureKey'
+import GameStep from '../../logic/gameStep'
 
 const POINT_GRAPH_SCALE = 10 // グラフのスケール
 const PARABOLA_GRAPH_BASE_X = 70 // グラフの基準Y座標
@@ -34,7 +36,7 @@ export default class UiContainer extends Phaser.GameObjects.Group {
     this.scene.add.image(this.gameCenterX, 80, TextureKey.ParabolaGraphBg).setScale(0.25)
 
     //グラフ上のヒットエリア
-    this.scene.add.image(470, 100, TextureKey.HitSample).setScale(0.1)
+    this.scene.add.image(470, 98, TextureKey.HitSample).setScale(0.1)
 
     //中央の照準
     this.scene.add.image(this.gameCenterX, this.gameCenterY, TextureKey.Scope).setScale(0.25)
@@ -68,6 +70,19 @@ export default class UiContainer extends Phaser.GameObjects.Group {
     //放物線グラフの初期化
     this.arrowMoveParabolaGraph = this.scene.add.graphics()
     this.arrowMoveParabolaGraph.lineStyle(2, 0xff0000, 1)
+
+    const gameStep = GameStep.getInstance()
+
+    new ImageButton(
+      this.scene,
+      this.gameCenterX,
+      this.gameCenterY + 300,
+      TextureKey.SlotStartA,
+      TextureKey.SlotStartB,
+      () => {
+        gameStep.nextStep()
+      }
+    ).setScale(0.7)
   }
 
   //飛んでいる矢の放物線グラフの開始位置

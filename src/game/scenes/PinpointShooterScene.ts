@@ -16,6 +16,7 @@ import { generateRandomInt, generateRandomFloat } from '../utils'
 import UiText from '../components/UiText'
 import UiContainer from '../sceneLogic/pinpointShoot/ui'
 import FortuneSlip from '../sceneLogic/fortuneSlip'
+import GameStep from '../logic/gameStep'
 
 const BOW_SPRING_CONSTANT = 300 // N/m
 const ARROW_HEAD_SIZE = 0.03 // m
@@ -48,10 +49,13 @@ const BOW_DRAW_POWER_BAR_MOVE_VALUE = 3.75 // px
 const SCOPE_MOVE_SPEED = 1
 
 //発射までの状態
-const SHOOT_STEP = {
-  INIT: 0,
-  SET_POWER: 1,
-  SHOOT: 2
+const SHOOT_STEP_NAMES = ['INIT', 'SET_POWER', 'SHOOT', 'RESULT', 'FINISH']
+enum SHOOT_STEP {
+  INIT,
+  SET_POWER,
+  SHOOT,
+  RESULT,
+  FINISH
 }
 
 const RESULT_IMAGE_KEYS: string[] = [
@@ -61,8 +65,6 @@ const RESULT_IMAGE_KEYS: string[] = [
 ]
 
 export class PinpointShooterScene extends Scene {
-  private stop = false
-
   private gameWidth = 0
   private gameHeight = 0
   private gameCenterX = 0
@@ -76,10 +78,8 @@ export class PinpointShooterScene extends Scene {
   hitAreaHut!: GameObjects.Image
   hitSample!: GameObjects.Image
 
-  slotPauseButton!: ImageButton
-
   //発射までのステップ
-  shootStep: number = SHOOT_STEP.INIT
+  gameStep!: GameStep
 
   //矢を発射させる角度
   arrowVerticalAngle = 0 // 矢の垂直方向の角度
@@ -154,27 +154,19 @@ export class PinpointShooterScene extends Scene {
       .image(this.gameCenterX, this.gameCenterY, TextureKey.HitArea)
       .setScale(0.02)
 
+    //ゲームステップ管理
+    this.gameStep = new GameStep(SHOOT_STEP_NAMES)
+
     //UIをまとめているクラス
     this.uiContainer = new UiContainer(this)
     this.uiContainer.init()
 
     //おみくじの管理
     this.fortuneSlip = new FortuneSlip(this)
-    this.fortuneSlip.init(TextureKey.NengaHazure, () => {
+    this.fortuneSlip.init(() => {
       console.log('おみくじ')
-      this.reset()
+      this.gameStep.initStep()
     })
-
-    this.slotPauseButton = new ImageButton(
-      this,
-      this.gameCenterX,
-      this.gameCenterY + 300,
-      TextureKey.SlotStartA,
-      TextureKey.SlotStartB,
-      () => {
-        this.incrementShootStep()
-      }
-    ).setScale(0.7)
 
     //風の方向と強さの表示
     this.windDirectionImg = this.add
@@ -262,7 +254,7 @@ export class PinpointShooterScene extends Scene {
     //矢を飛ばすときに必要な要素のUIの初期化
     this.initArrowShootUi()
 
-    this.shootStep = SHOOT_STEP.SET_POWER
+    this.gameStep.nextStep()
   }
 
   /**
@@ -286,7 +278,7 @@ export class PinpointShooterScene extends Scene {
     this.arrowState.vy = 0
 
     //発射ステップを初期化
-    this.shootStep = SHOOT_STEP.INIT
+    this.gameStep.initStep()
   }
 
   //矢を飛ばすときに必要な要素のUIの初期化
@@ -314,71 +306,13 @@ export class PinpointShooterScene extends Scene {
     this.calcWindDirection()
   }
 
+  //ゲームメインループ
   update(time: number, delta: number): void {
-    if (this.stop) {
-      const dt = delta / 1000 // Phaser のフレーム時間
-      //飛んでいる矢の状態の更新
-      this.arrowState = stepAirResistanceArrowFlight(
-        this.arrowState,
-        ARROW_MASS,
-        AIR_RESISTANCE_COEFFICIENT,
-        ARROW_CROSS_SECTIONAL_AREA,
-        AIR_DENSITY,
-        dt
-      )
-
-      // 矢の放物線のグラフ描画更新
-      this.uiContainer.arrowMoveParabolaGraphUpdate(this.arrowState.z, this.arrowState.y)
-
-      let result = is3DBoxCollision(
-        {
-          x: this.arrowState.x - ARROW_HEAD_SIZE / 2,
-          y: this.arrowState.y - ARROW_HEAD_SIZE / 2,
-          z: this.arrowState.z - ARROW_HEAD_SIZE / 2,
-          width: ARROW_HEAD_SIZE,
-          height: ARROW_HEAD_SIZE,
-          depth: ARROW_HEAD_SIZE
-        },
-        {
-          x: this.targetPosition.x - TARGET_SIZE_W / 2,
-          y: this.targetPosition.y - TARGET_SIZE_H / 2,
-          z: this.targetPosition.z - TARGET_SIZE_D / 2,
-          width: TARGET_SIZE_W,
-          height: TARGET_SIZE_H,
-          depth: TARGET_SIZE_D
-        }
-      )
-      if (result.collision) {
-        console.log(result)
-        this.isTargetHit = true
-        this.stop = false
-
-        this.fortuneSlip.setResult(TextureKey.NengaAtari_1)
-        this.fortuneSlip.animation()
-      }
-
-      if (this.arrowState.z > 45) {
-        this.stop = false
-        console.log(result)
-
-        this.fortuneSlip.setResult()
-        this.fortuneSlip.animation()
-      }
-
-      if (this.arrowState.y <= 0) {
-        this.stop = false
-        console.log(result)
-
-        this.fortuneSlip.setResult()
-        this.fortuneSlip.animation()
-      }
-    } else {
-      this.updateShootStep()
-    }
+    this.updateShootStep(delta)
   }
 
-  //リセット処理
-  private reset() {
+  //ゲーム初期化
+  private initGame() {
     this.initArrowState()
 
     // グラフィックスのクリア
@@ -389,28 +323,26 @@ export class PinpointShooterScene extends Scene {
 
     this.isTargetHit = false
 
-    this.shootStep = SHOOT_STEP.SET_POWER
-  }
-
-  /**
-   * 発射までのステップを進める
-   */
-  private incrementShootStep() {
-    if (!this.stop) {
-      this.shootStep++
-    }
+    this.gameStep.nextStep()
   }
 
   /**
    * 各ステータスの更新処理
    */
-  private updateShootStep() {
-    switch (this.shootStep) {
+  private updateShootStep(delta: number) {
+    switch (this.gameStep.getCurrentStep()) {
+      case SHOOT_STEP.INIT:
+        this.initGame()
+        break
       case SHOOT_STEP.SET_POWER:
         this.setBowDrawDistance()
         break
       case SHOOT_STEP.SHOOT:
-        this.start()
+        this.shoot()
+      case SHOOT_STEP.RESULT:
+        this.shootResult(delta)
+      case SHOOT_STEP.FINISH:
+        //何もしない 結果表示
         break
     }
   }
@@ -418,8 +350,7 @@ export class PinpointShooterScene extends Scene {
   /**
    * 発射トリガー
    */
-  private start() {
-    this.stop = true
+  private shoot() {
     this.setShootParam()
 
     //矢の発射位置
@@ -430,10 +361,73 @@ export class PinpointShooterScene extends Scene {
     // 風の影響を初速に加算
     this.arrowState.vx += this.windDirectionX
     this.arrowState.vz += this.windDirectionZ
-    this.shootStep = SHOOT_STEP.INIT
+    this.gameStep.nextStep()
 
     //飛んでいる矢の放物線グラフの開始位置
     this.uiContainer.arrowMoveParabolaGraphInit(this.arrowState.z, this.arrowState.y)
+  }
+
+  /**
+   * 放たれた矢の結果処理
+   * @param delta
+   */
+  private shootResult(delta: number) {
+    const dt = delta / 1000 // Phaser のフレーム時間
+    //飛んでいる矢の状態の更新
+    this.arrowState = stepAirResistanceArrowFlight(
+      this.arrowState,
+      ARROW_MASS,
+      AIR_RESISTANCE_COEFFICIENT,
+      ARROW_CROSS_SECTIONAL_AREA,
+      AIR_DENSITY,
+      dt
+    )
+
+    // 矢の放物線のグラフ描画更新
+    this.uiContainer.arrowMoveParabolaGraphUpdate(this.arrowState.z, this.arrowState.y)
+
+    let result = is3DBoxCollision(
+      {
+        x: this.arrowState.x - ARROW_HEAD_SIZE / 2,
+        y: this.arrowState.y - ARROW_HEAD_SIZE / 2,
+        z: this.arrowState.z - ARROW_HEAD_SIZE / 2,
+        width: ARROW_HEAD_SIZE,
+        height: ARROW_HEAD_SIZE,
+        depth: ARROW_HEAD_SIZE
+      },
+      {
+        x: this.targetPosition.x - TARGET_SIZE_W / 2,
+        y: this.targetPosition.y - TARGET_SIZE_H / 2,
+        z: this.targetPosition.z - TARGET_SIZE_D / 2,
+        width: TARGET_SIZE_W,
+        height: TARGET_SIZE_H,
+        depth: TARGET_SIZE_D
+      }
+    )
+    if (result.collision) {
+      console.log(result)
+      this.isTargetHit = true
+      this.gameStep.nextStep()
+
+      this.fortuneSlip.setResult(TextureKey.NengaAtari_1)
+      this.fortuneSlip.animation()
+    }
+
+    if (this.arrowState.z > 45) {
+      this.gameStep.nextStep()
+      console.log(result)
+
+      this.fortuneSlip.setResult()
+      this.fortuneSlip.animation()
+    }
+
+    if (this.arrowState.y <= 0) {
+      this.gameStep.nextStep()
+      console.log(result)
+
+      this.fortuneSlip.setResult()
+      this.fortuneSlip.animation()
+    }
   }
 
   /**
