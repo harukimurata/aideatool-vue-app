@@ -27,6 +27,7 @@ export default class ImageButton extends Phaser.GameObjects.Sprite {
     this.onHoldFunc = onHoldFunc
     this.holdIntervalMs = holdIntervalMs
     this.init(texture, hoverTexture, onClickFunc, onPointerFunc)
+    scene.add.existing(this)
   }
 
   /**

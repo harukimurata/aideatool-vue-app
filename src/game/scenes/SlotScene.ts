@@ -270,7 +270,6 @@ export class SlotScene extends Scene {
         this.onBet()
       }
     ).setScale(0.6)
-    this.add.existing(this.slotBetButton)
 
     this.slotStartButton = new ImageButton(
       this,
@@ -282,7 +281,6 @@ export class SlotScene extends Scene {
         this.onStartReel()
       }
     ).setScale(0.7)
-    this.add.existing(this.slotStartButton)
 
     for (let i = 0; i < STOP_BUTTON_NUM; i++) {
       this.slotStopButtons[i] = new ImageButton(
@@ -295,7 +293,6 @@ export class SlotScene extends Scene {
           this.onStopReel(i)
         }
       ).setScale(0.9)
-      this.add.existing(this.slotStopButtons[i])
     }
 
     this.add.text(55, KEY_SUPPORT_POS_Y, 'Space', {

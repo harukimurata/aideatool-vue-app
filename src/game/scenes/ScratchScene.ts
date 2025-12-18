@@ -90,7 +90,6 @@ export class ScratchScene extends Scene {
           }
         }
       )
-      this.add.existing(this.selectButtonBox[i])
     }
 
     this.scratchResult = this.add
@@ -111,7 +110,6 @@ export class ScratchScene extends Scene {
       }
     ).setScale(0.2)
     this.initButton.setVisible(false)
-    this.add.existing(this.initButton)
 
     //スクラッチ番号ボックスの初期化
     this.initNumberBox()

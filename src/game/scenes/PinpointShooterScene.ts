@@ -175,7 +175,6 @@ export class PinpointShooterScene extends Scene {
         this.incrementShootStep()
       }
     ).setScale(0.7)
-    this.add.existing(this.slotPauseButton)
 
     //風の方向と強さの表示
     this.windDirectionImg = this.add
@@ -205,7 +204,6 @@ export class PinpointShooterScene extends Scene {
         this.setArrowVerticalAngle(true)
       }
     ).setScale(0.2)
-    this.add.existing(this.scopeMoveButtonUp)
 
     this.scopeMoveButtonDown = new ImageButton(
       this,
@@ -221,7 +219,6 @@ export class PinpointShooterScene extends Scene {
     )
       .setScale(0.2)
       .setAngle(180)
-    this.add.existing(this.scopeMoveButtonDown)
 
     this.scopeMoveButtonRight = new ImageButton(
       this,
@@ -237,7 +234,6 @@ export class PinpointShooterScene extends Scene {
     )
       .setScale(0.2)
       .setAngle(90)
-    this.add.existing(this.scopeMoveButtonRight)
 
     this.scopeMoveButtonLeft = new ImageButton(
       this,
@@ -253,7 +249,6 @@ export class PinpointShooterScene extends Scene {
     )
       .setScale(0.2)
       .setAngle(270)
-    this.add.existing(this.scopeMoveButtonLeft)
 
     //パワーバーの範囲-155 ~ 220
     this.bowDrawPowerBarImg_posY = this.gameCenterY + 250
