@@ -339,8 +339,10 @@ export class PinpointShooterScene extends Scene {
         break
       case SHOOT_STEP.SHOOT:
         this.shoot()
+        break
       case SHOOT_STEP.RESULT:
         this.shootResult(delta)
+        break
       case SHOOT_STEP.FINISH:
         //何もしない 結果表示
         break
