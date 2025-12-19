@@ -67,7 +67,10 @@ enum TextureKey {
   HitAreaHut = 'hit_area_hut',
   HitSample = 'hit_sample',
   HitSamplePedestal = 'hit_sample_pedestal',
-  HitObject = 'hit_object'
+  HitObject = 'hit_object',
+  ShootOn = 'shoot_on',
+  ShootOff = 'shoot_off',
+  WindDirection = 'wind_direction'
 }
 
 export default TextureKey

@@ -170,7 +170,7 @@ export class PinpointShooterScene extends Scene {
 
     //風の方向と強さの表示
     this.windDirectionImg = this.add
-      .image(this.gameCenterX + 250, this.gameCenterY - 190, TextureKey.WindVector)
+      .image(this.gameCenterX + 250, this.gameCenterY - 190, TextureKey.WindDirection)
       .setScale(0.1)
     this.windForceText = new UiText(
       this,
@@ -186,7 +186,7 @@ export class PinpointShooterScene extends Scene {
     //スコープ
     this.scopeMoveButtonUp = new ImageButton(
       this,
-      100,
+      105,
       this.gameCenterY / 2 + 350,
       TextureKey.ScopeArrowOff,
       TextureKey.ScopeArrowOn,
@@ -199,7 +199,7 @@ export class PinpointShooterScene extends Scene {
 
     this.scopeMoveButtonDown = new ImageButton(
       this,
-      100,
+      105,
       this.gameCenterY / 2 + 450,
       TextureKey.ScopeArrowOff,
       TextureKey.ScopeArrowOn,
@@ -229,7 +229,7 @@ export class PinpointShooterScene extends Scene {
 
     this.scopeMoveButtonLeft = new ImageButton(
       this,
-      40,
+      50,
       this.gameCenterY / 2 + 400,
       TextureKey.ScopeArrowOff,
       TextureKey.ScopeArrowOn,

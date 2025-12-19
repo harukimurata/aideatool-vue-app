@@ -104,6 +104,9 @@ export class Preloader extends Scene {
     this.load.image(TextureKey.HitSample, 'image/pinpointShooter/hit_sample.png')
     this.load.image(TextureKey.HitSamplePedestal, 'image/pinpointShooter/hit_sample_pedestal.png')
     this.load.image(TextureKey.HitObject, 'image/pinpointShooter/hit_object.png')
+    this.load.image(TextureKey.ShootOn, 'image/pinpointShooter/shoot_on.png')
+    this.load.image(TextureKey.ShootOff, 'image/pinpointShooter/shoot_off.png')
+    this.load.image(TextureKey.WindDirection, 'image/pinpointShooter/wind_direction.png')
   }
 
   create() {

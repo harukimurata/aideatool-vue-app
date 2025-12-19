@@ -76,13 +76,13 @@ export default class UiContainer extends Phaser.GameObjects.Group {
     new ImageButton(
       this.scene,
       this.gameCenterX,
-      this.gameCenterY + 300,
-      TextureKey.SlotStartA,
-      TextureKey.SlotStartB,
+      this.gameCenterY + 205,
+      TextureKey.ShootOn,
+      TextureKey.ShootOff,
       () => {
         gameStep.nextStep()
       }
-    ).setScale(0.7)
+    ).setScale(0.18)
   }
 
   //飛んでいる矢の放物線グラフの開始位置
