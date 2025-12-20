@@ -156,7 +156,7 @@ export default class GameMain extends Phaser.GameObjects.Group {
     this.scopeMoveButtonUp = new ImageButton(
       this.scene,
       105,
-      this.gameCenterY / 2 + 350,
+      this.gameCenterY / 2 + 400,
       TextureKey.ScopeArrowOff,
       TextureKey.ScopeArrowOn,
       () => {},
@@ -169,7 +169,7 @@ export default class GameMain extends Phaser.GameObjects.Group {
     this.scopeMoveButtonDown = new ImageButton(
       this.scene,
       105,
-      this.gameCenterY / 2 + 450,
+      this.gameCenterY / 2 + 500,
       TextureKey.ScopeArrowOff,
       TextureKey.ScopeArrowOn,
       () => {},
@@ -184,7 +184,7 @@ export default class GameMain extends Phaser.GameObjects.Group {
     this.scopeMoveButtonRight = new ImageButton(
       this.scene,
       160,
-      this.gameCenterY / 2 + 400,
+      this.gameCenterY / 2 + 450,
       TextureKey.ScopeArrowOff,
       TextureKey.ScopeArrowOn,
       () => {},
@@ -199,7 +199,7 @@ export default class GameMain extends Phaser.GameObjects.Group {
     this.scopeMoveButtonLeft = new ImageButton(
       this.scene,
       50,
-      this.gameCenterY / 2 + 400,
+      this.gameCenterY / 2 + 450,
       TextureKey.ScopeArrowOff,
       TextureKey.ScopeArrowOn,
       () => {},
@@ -215,7 +215,7 @@ export default class GameMain extends Phaser.GameObjects.Group {
     this.shootButton = new ImageButton(
       this.scene,
       this.gameCenterX,
-      this.gameCenterY + 205,
+      this.gameCenterY + 255,
       TextureKey.ShootOn,
       TextureKey.ShootOff,
       () => {
