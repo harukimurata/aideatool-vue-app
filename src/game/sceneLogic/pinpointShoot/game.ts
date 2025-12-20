@@ -55,7 +55,7 @@ export default class GameMain extends Phaser.GameObjects.Group {
   hitAreaHut!: GameObjects.Image
   hitArea!: GameObjects.Image
 
-  //放物線のグラフ
+  //放物線のグラフ(飛距離と高さ)
   arrowSampleParabolaGraph!: GameObjects.Graphics
 
   //矢を発射させる角度
@@ -232,7 +232,7 @@ export default class GameMain extends Phaser.GameObjects.Group {
       .image(this.gameCenterX + 250, this.bowDrawPowerBarImg_posY, TextureKey.PowerBar)
       .setScale(0.2)
 
-    //放物線グラフの初期化
+    //放物線グラフの初期化(飛距離と高さ)
     this.arrowSampleParabolaGraph = this.scene.add.graphics()
     this.arrowSampleParabolaGraph.lineStyle(2, 0xff0000, 1)
   }
@@ -261,7 +261,7 @@ export default class GameMain extends Phaser.GameObjects.Group {
     this.hitAreaHut.setY(this.gameCenterY)
 
     // グラフィックスのクリア
-    this.arrowMoveParabolaGraphClear()
+    this.arrowSampleParabolaGraphClear()
 
     //ボタンの有効化
     this.activeGameButtons()
@@ -338,7 +338,7 @@ export default class GameMain extends Phaser.GameObjects.Group {
       this.arrowVerticalAngle = 20
     }
 
-    this.scopePosY = this.gameCenterY + this.arrowVerticalAngle * SCOPE_MOVE_SPEED * -1
+    this.scopePosY = this.gameCenterY + this.arrowVerticalAngle * -1
     this.pinpointShooterBg.setY(this.scopePosY)
     this.hitAreaHut.setY(this.scopePosY)
     this.hitArea.setY(this.scopePosY)
@@ -356,7 +356,7 @@ export default class GameMain extends Phaser.GameObjects.Group {
       this.arrowHorizontalAngle = 20
     }
 
-    this.scopePosX = this.gameCenterX + this.arrowHorizontalAngle * SCOPE_MOVE_SPEED * -1
+    this.scopePosX = this.gameCenterX + this.arrowHorizontalAngle * -1
     this.pinpointShooterBg.setX(this.scopePosX)
     this.hitAreaHut.setX(this.scopePosX)
     this.hitArea.setX(this.scopePosX)
@@ -391,7 +391,7 @@ export default class GameMain extends Phaser.GameObjects.Group {
     this.arrowState.vz += this.windDirectionZ
 
     //飛んでいる矢の放物線グラフの開始位置
-    this.arrowMoveParabolaGraphInit(this.arrowState.z, this.arrowState.y)
+    this.arrowSampleParabolaGraphInit(this.arrowState.z, this.arrowState.y)
     this.gameStep.nextStep()
   }
 
@@ -432,7 +432,7 @@ export default class GameMain extends Phaser.GameObjects.Group {
     )
 
     // 矢の放物線のグラフ描画更新
-    this.arrowMoveParabolaGraphUpdate(this.arrowState.z, this.arrowState.y)
+    this.arrowSampleParabolaGraphUpdate(this.arrowState.z, this.arrowState.y)
 
     let result = is3DBoxCollision(
       {
@@ -469,7 +469,7 @@ export default class GameMain extends Phaser.GameObjects.Group {
   }
 
   //飛んでいる矢の放物線グラフの開始位置
-  arrowMoveParabolaGraphInit(posX: number, posY: number) {
+  arrowSampleParabolaGraphInit(posX: number, posY: number) {
     this.arrowSampleParabolaGraph.beginPath()
     this.arrowSampleParabolaGraph.moveTo(
       PARABOLA_GRAPH_BASE_X + posX * POINT_GRAPH_SCALE,
@@ -478,7 +478,7 @@ export default class GameMain extends Phaser.GameObjects.Group {
   }
 
   // 矢の放物線のグラフ描画更新
-  arrowMoveParabolaGraphUpdate(posX: number, posY: number) {
+  arrowSampleParabolaGraphUpdate(posX: number, posY: number) {
     this.arrowSampleParabolaGraph.lineTo(
       PARABOLA_GRAPH_BASE_X + posX * POINT_GRAPH_SCALE,
       PARABOLA_GRAPH_BASE_Y - posY * POINT_GRAPH_SCALE
@@ -487,7 +487,7 @@ export default class GameMain extends Phaser.GameObjects.Group {
   }
 
   // 矢の放物線のグラフクリア
-  arrowMoveParabolaGraphClear() {
+  arrowSampleParabolaGraphClear() {
     this.arrowSampleParabolaGraph.clear()
     this.arrowSampleParabolaGraph.lineStyle(2, 0xff0000, 1)
   }
