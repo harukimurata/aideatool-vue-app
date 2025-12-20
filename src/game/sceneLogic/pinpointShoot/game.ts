@@ -56,7 +56,7 @@ export default class GameMain extends Phaser.GameObjects.Group {
   hitArea!: GameObjects.Image
 
   //放物線のグラフ
-  arrowMoveParabolaGraph!: GameObjects.Graphics
+  arrowSampleParabolaGraph!: GameObjects.Graphics
 
   //矢を発射させる角度
   arrowVerticalAngle = 0 // 矢の垂直方向の角度
@@ -221,7 +221,7 @@ export default class GameMain extends Phaser.GameObjects.Group {
       () => {
         this.gameStep.nextStep()
       }
-    ).setScale(0.18)
+    ).setScale(0.15)
   }
 
   //ゲーム内の状態が変化するUIの初期化
@@ -233,8 +233,8 @@ export default class GameMain extends Phaser.GameObjects.Group {
       .setScale(0.2)
 
     //放物線グラフの初期化
-    this.arrowMoveParabolaGraph = this.scene.add.graphics()
-    this.arrowMoveParabolaGraph.lineStyle(2, 0xff0000, 1)
+    this.arrowSampleParabolaGraph = this.scene.add.graphics()
+    this.arrowSampleParabolaGraph.lineStyle(2, 0xff0000, 1)
   }
 
   //ゲームの初期化・リセット
@@ -470,8 +470,8 @@ export default class GameMain extends Phaser.GameObjects.Group {
 
   //飛んでいる矢の放物線グラフの開始位置
   arrowMoveParabolaGraphInit(posX: number, posY: number) {
-    this.arrowMoveParabolaGraph.beginPath()
-    this.arrowMoveParabolaGraph.moveTo(
+    this.arrowSampleParabolaGraph.beginPath()
+    this.arrowSampleParabolaGraph.moveTo(
       PARABOLA_GRAPH_BASE_X + posX * POINT_GRAPH_SCALE,
       PARABOLA_GRAPH_BASE_Y - posY * POINT_GRAPH_SCALE
     )
@@ -479,17 +479,17 @@ export default class GameMain extends Phaser.GameObjects.Group {
 
   // 矢の放物線のグラフ描画更新
   arrowMoveParabolaGraphUpdate(posX: number, posY: number) {
-    this.arrowMoveParabolaGraph.lineTo(
+    this.arrowSampleParabolaGraph.lineTo(
       PARABOLA_GRAPH_BASE_X + posX * POINT_GRAPH_SCALE,
       PARABOLA_GRAPH_BASE_Y - posY * POINT_GRAPH_SCALE
     )
-    this.arrowMoveParabolaGraph.strokePath()
+    this.arrowSampleParabolaGraph.strokePath()
   }
 
   // 矢の放物線のグラフクリア
   arrowMoveParabolaGraphClear() {
-    this.arrowMoveParabolaGraph.clear()
-    this.arrowMoveParabolaGraph.lineStyle(2, 0xff0000, 1)
+    this.arrowSampleParabolaGraph.clear()
+    this.arrowSampleParabolaGraph.lineStyle(2, 0xff0000, 1)
   }
 
   //結果表示
