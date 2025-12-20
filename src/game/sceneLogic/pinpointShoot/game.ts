@@ -39,6 +39,11 @@ const POINT_GRAPH_SCALE = 10 // グラフのスケール
 const PARABOLA_GRAPH_BASE_X = 70 // グラフの基準Y座標
 const PARABOLA_GRAPH_BASE_Y = 120 // グラフの基準Y座標
 
+// ゲーム画面上での放物線表示に使うスケール／オフセット
+const PARABOLA_DEPTH_PX = 200 // 開始(y=gameCenterY+200)からターゲット(y=gameCenterY)までのピクセル幅
+const PARABOLA_X_SCALE = 8 // 水平方向のメートル->ピクセル変換
+const PARABOLA_HEIGHT_SCALE = 20 // 高さ(m) -> ピクセル変換（ターゲット高さを基準にする）
+
 export default class GameMain extends Phaser.GameObjects.Group {
   // ゲーム画面サイズ関連
   private gameCenterX = 0
@@ -57,6 +62,8 @@ export default class GameMain extends Phaser.GameObjects.Group {
 
   //放物線のグラフ(飛距離と高さ)
   arrowSampleParabolaGraph!: GameObjects.Graphics
+  //ゲーム視点の放物線のグラフ
+  arrowParabola!: GameObjects.Graphics
 
   //矢を発射させる角度
   arrowVerticalAngle = 0 // 矢の垂直方向の角度
@@ -235,6 +242,10 @@ export default class GameMain extends Phaser.GameObjects.Group {
     //放物線グラフの初期化(飛距離と高さ)
     this.arrowSampleParabolaGraph = this.scene.add.graphics()
     this.arrowSampleParabolaGraph.lineStyle(2, 0xff0000, 1)
+
+    //ゲーム視点の放物線の初期化
+    this.arrowParabola = this.scene.add.graphics()
+    this.arrowParabola.lineStyle(2, 0xff0000, 1)
   }
 
   //ゲームの初期化・リセット
@@ -262,6 +273,7 @@ export default class GameMain extends Phaser.GameObjects.Group {
 
     // グラフィックスのクリア
     this.arrowSampleParabolaGraphClear()
+    this.arrowParabolaClear()
 
     //ボタンの有効化
     this.activeGameButtons()
@@ -298,7 +310,7 @@ export default class GameMain extends Phaser.GameObjects.Group {
 
     this.arrowState.z = 0
     this.arrowState.x = 0
-    this.arrowState.y = 0
+    this.arrowState.y = START_ARROW_HEIGHT
     this.arrowState.vz = 0
     this.arrowState.vx = 0
     this.arrowState.vy = 0
@@ -392,6 +404,7 @@ export default class GameMain extends Phaser.GameObjects.Group {
 
     //飛んでいる矢の放物線グラフの開始位置
     this.arrowSampleParabolaGraphInit(this.arrowState.z, this.arrowState.y)
+    this.arrowParabolaInit(this.arrowState.x, this.arrowState.z)
     this.gameStep.nextStep()
   }
 
@@ -433,6 +446,7 @@ export default class GameMain extends Phaser.GameObjects.Group {
 
     // 矢の放物線のグラフ描画更新
     this.arrowSampleParabolaGraphUpdate(this.arrowState.z, this.arrowState.y)
+    this.arrowParabolaUpdate(this.arrowState.x, this.arrowState.z)
 
     let result = is3DBoxCollision(
       {
@@ -469,18 +483,18 @@ export default class GameMain extends Phaser.GameObjects.Group {
   }
 
   //飛んでいる矢の放物線グラフの開始位置
-  arrowSampleParabolaGraphInit(posX: number, posY: number) {
+  arrowSampleParabolaGraphInit(posZ: number, posY: number) {
     this.arrowSampleParabolaGraph.beginPath()
     this.arrowSampleParabolaGraph.moveTo(
-      PARABOLA_GRAPH_BASE_X + posX * POINT_GRAPH_SCALE,
+      PARABOLA_GRAPH_BASE_X + posZ * POINT_GRAPH_SCALE,
       PARABOLA_GRAPH_BASE_Y - posY * POINT_GRAPH_SCALE
     )
   }
 
   // 矢の放物線のグラフ描画更新
-  arrowSampleParabolaGraphUpdate(posX: number, posY: number) {
+  arrowSampleParabolaGraphUpdate(posZ: number, posY: number) {
     this.arrowSampleParabolaGraph.lineTo(
-      PARABOLA_GRAPH_BASE_X + posX * POINT_GRAPH_SCALE,
+      PARABOLA_GRAPH_BASE_X + posZ * POINT_GRAPH_SCALE,
       PARABOLA_GRAPH_BASE_Y - posY * POINT_GRAPH_SCALE
     )
     this.arrowSampleParabolaGraph.strokePath()
@@ -490,6 +504,43 @@ export default class GameMain extends Phaser.GameObjects.Group {
   arrowSampleParabolaGraphClear() {
     this.arrowSampleParabolaGraph.clear()
     this.arrowSampleParabolaGraph.lineStyle(2, 0xff0000, 1)
+  }
+
+  // 飛んでいる矢のゲーム視点上の放物線グラフ開始位置
+  // 引数は (posX, posZ) — posZ は射出点からの奥行き (m)
+  arrowParabolaInit(posX: number, posZ: number) {
+    this.arrowParabola.beginPath()
+
+    const screenX = this.gameCenterX + posX * PARABOLA_X_SCALE
+
+    // 深度方向は z=0 -> gameCenterY+PARABOLA_DEPTH_PX, z=TARGET_POS_Z -> gameCenterY
+    const baselineY =
+      this.gameCenterY + PARABOLA_DEPTH_PX - (posZ / TARGET_POS_Z) * PARABOLA_DEPTH_PX
+
+    // 高さはターゲット高さ (this.targetPosition.y) を基準として相対表示する
+    const heightOffset = this.arrowState.y - this.targetPosition.y
+    const screenY = baselineY - heightOffset * PARABOLA_HEIGHT_SCALE
+
+    this.arrowParabola.moveTo(screenX, screenY)
+  }
+
+  // 矢の放物線のグラフ描画更新
+  // 引数は (posX, posZ)
+  arrowParabolaUpdate(posX: number, posZ: number) {
+    const screenX = this.gameCenterX + posX * PARABOLA_X_SCALE
+    const baselineY =
+      this.gameCenterY + PARABOLA_DEPTH_PX - (posZ / TARGET_POS_Z) * PARABOLA_DEPTH_PX
+    const heightOffset = (this.arrowState?.y ?? 0) - this.targetPosition.y
+    const screenY = baselineY - heightOffset * PARABOLA_HEIGHT_SCALE
+
+    this.arrowParabola.lineTo(screenX, screenY)
+    this.arrowParabola.strokePath()
+  }
+
+  // 矢の放物線のグラフクリア
+  arrowParabolaClear() {
+    this.arrowParabola.clear()
+    this.arrowParabola.lineStyle(2, 0xff0000, 1)
   }
 
   //結果表示
