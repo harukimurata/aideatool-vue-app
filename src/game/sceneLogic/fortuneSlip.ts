@@ -3,8 +3,8 @@ import ImageButton from '../components/ImageButton'
 import TextureKey from '../const/TextureKey'
 
 export default class FortuneSlip extends Phaser.GameObjects.Group {
-  private gameWidth = 0
-  private gameHeight = 0
+  private static instance: FortuneSlip
+
   private gameCenterX = 0
   private gameCenterY = 0
 
@@ -15,12 +15,21 @@ export default class FortuneSlip extends Phaser.GameObjects.Group {
    * おみくじの管理
    * @param scene
    */
-  constructor(scene: Phaser.Scene) {
+  constructor(scene: Phaser.Scene, gameCenterX: number, gameCenterY: number) {
     super(scene)
-    this.gameWidth = this.scene.scale.width
-    this.gameHeight = this.scene.scale.height
-    this.gameCenterX = this.gameWidth / 2
-    this.gameCenterY = this.gameHeight / 2
+    this.gameCenterX = gameCenterX
+    this.gameCenterY = gameCenterY
+
+    FortuneSlip.instance = this
+  }
+
+  // シングルトンの取得
+  // ほかのクラスでも同じインスタンスを使いたい場合はこれを使う
+  public static getInstance(): FortuneSlip {
+    if (!this.instance) {
+      this.instance = new FortuneSlip(this.instance, 200, 200)
+    }
+    return this.instance
   }
 
   /**
@@ -57,9 +66,9 @@ export default class FortuneSlip extends Phaser.GameObjects.Group {
    */
   public setResult(resultImage: string = TextureKey.NengaHazure) {
     if (resultImage == TextureKey.NengaHazure) {
-      this.initButton.setPosition(this.gameWidth / 2, this.gameHeight / 2 + 80)
+      this.initButton.setPosition(this.gameCenterX, this.gameCenterY + 80)
     } else {
-      this.initButton.setPosition(this.gameWidth / 2, this.gameHeight / 2 + 220)
+      this.initButton.setPosition(this.gameCenterX, this.gameCenterY + 220)
     }
 
     this.scratchResult.setTexture(resultImage).setVisible(true)

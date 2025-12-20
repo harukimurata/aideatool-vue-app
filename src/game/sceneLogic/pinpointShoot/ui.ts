@@ -1,15 +1,7 @@
 import { GameObjects } from 'phaser'
-import ImageButton from '../../components/ImageButton'
 import TextureKey from '../../const/TextureKey'
-import GameStep from '../../logic/gameStep'
-
-const POINT_GRAPH_SCALE = 10 // グラフのスケール
-const PARABOLA_GRAPH_BASE_X = 70 // グラフの基準Y座標
-const PARABOLA_GRAPH_BASE_Y = 120 // グラフの基準Y座標
 
 export default class UiContainer extends Phaser.GameObjects.Group {
-  private gameWidth = 0
-  private gameHeight = 0
   private gameCenterX = 0
   private gameCenterY = 0
 
@@ -21,12 +13,10 @@ export default class UiContainer extends Phaser.GameObjects.Group {
   //放物線のグラフ
   arrowMoveParabolaGraph!: GameObjects.Graphics
 
-  constructor(scene: Phaser.Scene) {
+  constructor(scene: Phaser.Scene, gameCenterX: number, gameCenterY: number) {
     super(scene)
-    this.gameWidth = this.scene.scale.width
-    this.gameHeight = this.scene.scale.height
-    this.gameCenterX = this.gameWidth / 2
-    this.gameCenterY = this.gameHeight / 2
+    this.gameCenterX = gameCenterX
+    this.gameCenterY = gameCenterY
   }
 
   init() {
@@ -66,46 +56,5 @@ export default class UiContainer extends Phaser.GameObjects.Group {
     points.forEach((p) => {
       graphics.fillCircle(p.x, p.y, 4) // 半径4pxの円
     })
-
-    //放物線グラフの初期化
-    this.arrowMoveParabolaGraph = this.scene.add.graphics()
-    this.arrowMoveParabolaGraph.lineStyle(2, 0xff0000, 1)
-
-    const gameStep = GameStep.getInstance()
-
-    new ImageButton(
-      this.scene,
-      this.gameCenterX,
-      this.gameCenterY + 205,
-      TextureKey.ShootOn,
-      TextureKey.ShootOff,
-      () => {
-        gameStep.nextStep()
-      }
-    ).setScale(0.18)
-  }
-
-  //飛んでいる矢の放物線グラフの開始位置
-  arrowMoveParabolaGraphInit(posX: number, posY: number) {
-    this.arrowMoveParabolaGraph.beginPath()
-    this.arrowMoveParabolaGraph.moveTo(
-      PARABOLA_GRAPH_BASE_X + posX * POINT_GRAPH_SCALE,
-      PARABOLA_GRAPH_BASE_Y - posY * POINT_GRAPH_SCALE
-    )
-  }
-
-  // 矢の放物線のグラフ描画更新
-  arrowMoveParabolaGraphUpdate(posX: number, posY: number) {
-    this.arrowMoveParabolaGraph.lineTo(
-      PARABOLA_GRAPH_BASE_X + posX * POINT_GRAPH_SCALE,
-      PARABOLA_GRAPH_BASE_Y - posY * POINT_GRAPH_SCALE
-    )
-    this.arrowMoveParabolaGraph.strokePath()
-  }
-
-  // 矢の放物線のグラフクリア
-  arrowMoveParabolaGraphClear() {
-    this.arrowMoveParabolaGraph.clear()
-    this.arrowMoveParabolaGraph.lineStyle(2, 0xff0000, 1)
   }
 }
