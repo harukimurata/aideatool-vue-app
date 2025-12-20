@@ -104,6 +104,9 @@ export default class GameMain extends Phaser.GameObjects.Group {
   //矢を発射させる速度
   v_0 = 0
 
+  //発射ボタン
+  shootButton!: ImageButton
+
   constructor(scene: Phaser.Scene, gameCenterX: number, gameCenterY: number) {
     super(scene)
     this.gameCenterX = gameCenterX
@@ -209,7 +212,7 @@ export default class GameMain extends Phaser.GameObjects.Group {
       .setAngle(270)
 
     //発射ボタン
-    new ImageButton(
+    this.shootButton = new ImageButton(
       this.scene,
       this.gameCenterX,
       this.gameCenterY + 205,
@@ -259,6 +262,9 @@ export default class GameMain extends Phaser.GameObjects.Group {
 
     // グラフィックスのクリア
     this.arrowMoveParabolaGraphClear()
+
+    //ボタンの有効化
+    this.activeGameButtons()
   }
 
   // ゲームパラメータの初期化
@@ -488,8 +494,27 @@ export default class GameMain extends Phaser.GameObjects.Group {
 
   //結果表示
   private showResult(resultImage?: string) {
-    this.gameStep.nextStep()
+    this.inactiveGameButtons()
     this.fortuneSlip.setResult(resultImage)
     this.fortuneSlip.animation()
+    this.gameStep.nextStep()
+  }
+
+  //ゲーム内ボタンの有効化
+  public activeGameButtons() {
+    this.shootButton.activeButton()
+    this.scopeMoveButtonUp.activeButton()
+    this.scopeMoveButtonDown.activeButton()
+    this.scopeMoveButtonLeft.activeButton()
+    this.scopeMoveButtonRight.activeButton()
+  }
+
+  //ゲーム内ボタンの無効化
+  public inactiveGameButtons() {
+    this.shootButton.inactiveButton()
+    this.scopeMoveButtonUp.inactiveButton()
+    this.scopeMoveButtonDown.inactiveButton()
+    this.scopeMoveButtonLeft.inactiveButton()
+    this.scopeMoveButtonRight.inactiveButton()
   }
 }
