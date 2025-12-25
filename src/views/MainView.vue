@@ -6,7 +6,7 @@
       <div class="card">
         <div class="card-content">
           <h1 class="title pt-3">aideaTool</h1>
-          <div class="columns">
+          <!-- <div class="columns">
             <div class="column is-half is-offset-one-quarter">
               <button class="button is-fullwidth" @click="toLink('Blog')">後日談</button>
             </div>
@@ -27,7 +27,7 @@
             <div class="column is-half is-offset-one-quarter">
               <button class="button is-fullwidth" @click="toLink('Restaurant')">レストラン</button>
             </div>
-          </div>
+          </div> -->
           <div class="columns">
             <div class="column is-half is-offset-one-quarter">
               <button class="button is-fullwidth" @click="toLink('Game')">ゲーム</button>
