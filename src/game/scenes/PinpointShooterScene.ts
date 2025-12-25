@@ -2,7 +2,6 @@ import { GameObjects, Scene } from 'phaser'
 
 import { EventBus } from '../EventBus'
 import { SceneKey, SceneKeyIndex } from '../const/SceneKey'
-import TextureKey from '../const/TextureKey'
 import GameStep from '../logic/gameStep'
 import GameMain from '../sceneLogic/pinpointShoot/game'
 import UiContainer from '../sceneLogic/pinpointShoot/ui'
@@ -17,12 +16,6 @@ enum SHOOT_STEP {
   RESULT,
   FINISH
 }
-
-const RESULT_IMAGE_KEYS: string[] = [
-  TextureKey.NengaAtari_1,
-  TextureKey.NengaAtari_2,
-  TextureKey.NengaAtari_3
-]
 
 export class PinpointShooterScene extends Scene {
   //発射までのステップ

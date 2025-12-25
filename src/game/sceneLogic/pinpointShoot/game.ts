@@ -44,6 +44,12 @@ const PARABOLA_DEPTH_PX = 200 // 開始(y=gameCenterY+200)からターゲット(
 const PARABOLA_X_SCALE = 8 // 水平方向のメートル->ピクセル変換
 const PARABOLA_HEIGHT_SCALE = 20 // 高さ(m) -> ピクセル変換（ターゲット高さを基準にする）
 
+const RESULT_IMAGE_KEYS: string[] = [
+  TextureKey.NengaAtari_1,
+  TextureKey.NengaAtari_2,
+  TextureKey.NengaAtari_3
+]
+
 export default class GameMain extends Phaser.GameObjects.Group {
   // ゲーム画面サイズ関連
   private gameCenterX = 0
@@ -446,7 +452,7 @@ export default class GameMain extends Phaser.GameObjects.Group {
 
     // 矢の放物線のグラフ描画更新
     this.arrowSampleParabolaGraphUpdate(this.arrowState.z, this.arrowState.y)
-    this.arrowParabolaUpdate(this.arrowState.x, this.arrowState.z)
+    //this.arrowParabolaUpdate(this.arrowState.x, this.arrowState.z)
 
     let result = is3DBoxCollision(
       {
@@ -467,8 +473,8 @@ export default class GameMain extends Phaser.GameObjects.Group {
       }
     )
     if (result.collision) {
-      console.log(result)
-      this.showResult(TextureKey.NengaAtari_1)
+      const textureNo = generateRandomInt(0, RESULT_IMAGE_KEYS.length - 1)
+      this.showResult(RESULT_IMAGE_KEYS[textureNo])
     }
 
     if (this.arrowState.z > 45) {
