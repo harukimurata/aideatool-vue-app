@@ -45,9 +45,9 @@ const PARABOLA_X_SCALE = 8 // 水平方向のメートル->ピクセル変換
 const PARABOLA_HEIGHT_SCALE = 20 // 高さ(m) -> ピクセル変換（ターゲット高さを基準にする）
 
 const RESULT_IMAGE_KEYS: string[] = [
-  TextureKey.NengaAtari_1,
-  TextureKey.NengaAtari_2,
-  TextureKey.NengaAtari_3
+  TextureKey.NewYear2026Sho,
+  TextureKey.NewYear2026Chu,
+  TextureKey.NewYear2026Dai
 ]
 
 export default class GameMain extends Phaser.GameObjects.Group {
