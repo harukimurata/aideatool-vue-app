@@ -5,8 +5,9 @@
   </div>
 
   <div class="buttons is-centered mt-3">
-    <button class="button" @click="changeScene(SceneKey.SlotScene)">スロット</button>
-    <button class="button" @click="changeScene(SceneKey.ScratchScene)">スクラッチ</button>
+    <div v-for="item in SceneKey" :key="item.scene_name">
+      <button class="button" @click="changeScene(item.scene_name)">{{ item.name }}</button>
+    </div>
   </div>
 </template>
 
@@ -15,7 +16,7 @@ import { onMounted, onUnmounted, ref, computed } from 'vue'
 import Phaser from 'phaser'
 import { EventBus } from '@/game/EventBus'
 import StartGame from '@/game/main'
-import SceneKey from '@/game/const/SceneKey'
+import { SceneKey } from '@/game/const/SceneKey'
 
 // Save the current scene instance
 const scene = ref()

@@ -1,6 +1,7 @@
 import { Boot } from './scenes/Boot'
 import { SlotScene } from './scenes/SlotScene'
 import { ScratchScene } from './scenes/ScratchScene'
+import { PinpointShooterScene } from './scenes/PinpointShooterScene'
 import { Game } from 'phaser'
 import { Preloader } from './scenes/Preloader'
 
@@ -18,7 +19,7 @@ const config: Phaser.Types.Core.GameConfig = {
   },
   parent: 'game-container',
   backgroundColor: '#028af8',
-  scene: [Boot, Preloader, SlotScene, ScratchScene]
+  scene: [Boot, Preloader, SlotScene, ScratchScene, PinpointShooterScene]
 }
 
 const StartGame = (parent: string) => {

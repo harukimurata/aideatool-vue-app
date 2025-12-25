@@ -1,5 +1,5 @@
 import { Scene } from 'phaser'
-import SceneKey from '../const/SceneKey'
+import { SceneKey, SceneKeyIndex } from '../const/SceneKey'
 import TextureKey from '../const/TextureKey'
 
 export class Preloader extends Scene {
@@ -31,6 +31,9 @@ export class Preloader extends Scene {
     //  Load the assets for the game - Replace with your own assets
     this.load.setPath('assets')
 
+    this.load.image(TextureKey.DefaultBg, '/defaultBg.png')
+
+    //スロット関連画像
     this.load.image(TextureKey.HeightCheck, '/heightCheck.png')
     this.load.image(TextureKey.SlotBG, 'image/slot/slot_bg.png')
     this.load.image(TextureKey.SlotMachineOver, 'image/slot/slot_machine_over-02.png')
@@ -62,6 +65,8 @@ export class Preloader extends Scene {
     this.load.image(TextureKey.SlotStarA, 'image/slot/button/star_a.png')
     this.load.image(TextureKey.SlotStarB, 'image/slot/button/star_b.png')
     this.load.image(TextureKey.SlotStarC, 'image/slot/button/star_c.png')
+
+    //年賀状2025関連画像
     this.load.image(TextureKey.NengaBase, 'image/nenga2025/base.png')
     this.load.image(TextureKey.NengaSnake, 'image/nenga2025/animal/snake.png')
     this.load.image(TextureKey.NengaHose, 'image/nenga2025/animal/hose.png')
@@ -69,11 +74,30 @@ export class Preloader extends Scene {
     this.load.image(TextureKey.NengaMonkey, 'image/nenga2025/animal/monkey.png')
     this.load.image(TextureKey.NengaChicken, 'image/nenga2025/animal/chicken.png')
     this.load.image(TextureKey.NengaSilver, 'image/nenga2025/silver.png')
-    this.load.image(TextureKey.NengaRetry, 'image/nenga2025/retry.png')
+    this.load.image(TextureKey.NengaRetry, 'image/nenga2025/retry_.png')
     this.load.image(TextureKey.NengaAtari_1, 'image/nenga2025/atari/atari_sho_0.png')
     this.load.image(TextureKey.NengaAtari_2, 'image/nenga2025/atari/atari_chu_0.png')
     this.load.image(TextureKey.NengaAtari_3, 'image/nenga2025/atari/atari_dai_0.png')
     this.load.image(TextureKey.NengaHazure, 'image/nenga2025/hazure.png')
+
+    //ピンポイントシューター関連画像
+    this.load.image(TextureKey.AngleMater, 'image/pinpointShooter/angle_mater.png')
+    this.load.image(TextureKey.AngleMaterArrow, 'image/pinpointShooter/angle_mater_arrow.png')
+    this.load.image(TextureKey.PowerBar, 'image/pinpointShooter/power_bar.png')
+    this.load.image(TextureKey.PowerLevel, 'image/pinpointShooter/power_level.png')
+    this.load.image(TextureKey.Scope, 'image/pinpointShooter/scope.png')
+    this.load.image(TextureKey.ScopeArrowOff, 'image/pinpointShooter/scope_arrow_off.png')
+    this.load.image(TextureKey.ScopeArrowOn, 'image/pinpointShooter/scope_arrow_on.png')
+    this.load.image(TextureKey.PinpointShooterBg, 'image/pinpointShooter/pinpoint_shooter_bg.png')
+    this.load.image(TextureKey.ParabolaGraphBg, 'image/pinpointShooter/parabola_graph_bg.png')
+    this.load.image(TextureKey.HitArea, 'image/pinpointShooter/hit_area.png')
+    this.load.image(TextureKey.HitAreaHut, 'image/pinpointShooter/hit_area_hut.png')
+    this.load.image(TextureKey.HitSample, 'image/pinpointShooter/hit_sample.png')
+    this.load.image(TextureKey.HitSamplePedestal, 'image/pinpointShooter/hit_sample_pedestal.png')
+    this.load.image(TextureKey.HitObject, 'image/pinpointShooter/hit_object.png')
+    this.load.image(TextureKey.ShootOn, 'image/pinpointShooter/shoot_on.png')
+    this.load.image(TextureKey.ShootOff, 'image/pinpointShooter/shoot_off.png')
+    this.load.image(TextureKey.WindDirection, 'image/pinpointShooter/wind_direction.png')
   }
 
   create() {
@@ -81,6 +105,6 @@ export class Preloader extends Scene {
     //  For example, you can define global animations here, so we can use them in other scenes.
 
     //  Move to the MainMenu. You could also swap this for a Scene Transition, such as a camera fade.
-    this.scene.start(SceneKey.SlotScene)
+    this.scene.start(SceneKey[SceneKeyIndex.PinpointShooterScene].scene_name)
   }
 }

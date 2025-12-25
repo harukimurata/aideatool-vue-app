@@ -1,4 +1,5 @@
 enum TextureKey {
+  DefaultBg = 'defaultBg',
   HeightCheck = 'heightCheck',
   SlotBG = 'slot_bg',
   PushButton = 'pushButton',
@@ -43,7 +44,24 @@ enum TextureKey {
   NengaAtari_1 = 'nenga_atari_1',
   NengaAtari_2 = 'nenga_atari_2',
   NengaAtari_3 = 'nenga_atari_3',
-  NengaHazure = 'nenga_hazure'
+  NengaHazure = 'nenga_hazure',
+  AngleMaterArrow = 'angleMaterArrow',
+  AngleMater = 'angleMater',
+  PowerBar = 'power_bar',
+  PowerLevel = 'power_level',
+  Scope = 'scope',
+  ScopeArrowOff = 'scope_arrow_off',
+  ScopeArrowOn = 'scope_arrow_on',
+  PinpointShooterBg = 'pinpoint_shooter_bg',
+  ParabolaGraphBg = 'parabola_graph_bg',
+  HitArea = 'hit_area',
+  HitAreaHut = 'hit_area_hut',
+  HitSample = 'hit_sample',
+  HitSamplePedestal = 'hit_sample_pedestal',
+  HitObject = 'hit_object',
+  ShootOn = 'shoot_on',
+  ShootOff = 'shoot_off',
+  WindDirection = 'wind_direction'
 }
 
 export default TextureKey

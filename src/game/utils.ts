@@ -13,11 +13,20 @@ export function isEvenNumber(number1: number, number2: number, number3: number):
 
 /**
  * min ~ maxの間で整数を1つランダムに返す
- * @param n
+ * @param n int
  * @returns
  */
-export function generateRandomInt(min: number, max: number) {
+export function generateRandomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
+/**
+ * min ~ maxの間で小数点付きの数を1つランダムに返す
+ * @param n float
+ * @returns
+ */
+export function generateRandomFloat(min: number, max: number): number {
+  return Math.random() * (max - min) + min
 }
 
 /**
