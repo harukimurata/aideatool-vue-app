@@ -49,8 +49,7 @@
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue'
 import { type RestaurantAllResponse } from '@/interface/Restaurant'
-import { productGetAll } from '../../api/restaurant'
-import { useRestaurantCartStore } from '../../stores/restaurantCart'
+import { productGetAll } from '@/api/restaurant'
 
 const restaurantResult = ref<RestaurantAllResponse | null>(null)
 //エラーモーダル
