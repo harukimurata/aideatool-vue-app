@@ -5,6 +5,7 @@ import { SceneKey, SceneKeyIndex } from '../const/SceneKey'
 import GameStep from '../logic/gameStep'
 import GameMain from '../sceneLogic/pinpointShoot/game'
 import UiContainer from '../sceneLogic/pinpointShoot/ui'
+import ResultContainer from '../sceneLogic/pinpointShoot/result'
 import FortuneSlip from '../sceneLogic/fortuneSlip'
 
 //発射までの状態
@@ -27,6 +28,9 @@ export class PinpointShooterScene extends Scene {
   //UIをまとめているクラス
   uiContainer!: UiContainer
 
+  //結果表示管理
+  ResultContainer!: ResultContainer
+
   //おみくじ管理
   fortuneSlip!: FortuneSlip
 
@@ -47,6 +51,8 @@ export class PinpointShooterScene extends Scene {
     //おみくじの管理
     this.fortuneSlip = new FortuneSlip(this, gameCenterX, gameCenterY)
 
+    this.ResultContainer = new ResultContainer(this, gameCenterX, gameCenterY)
+
     //ゲームメインロジック
     this.gameMain = new GameMain(this, gameCenterX, gameCenterY)
 
@@ -62,9 +68,12 @@ export class PinpointShooterScene extends Scene {
     //ゲーム内の状態が変化するUIの初期化
     this.gameMain.initGameVariableUi()
 
+    this.ResultContainer.init(() => {
+      this.fortuneSlip.animation()
+    })
+
     //おみくじ初期化
     this.fortuneSlip.init(() => {
-      console.log('おみくじ')
       this.gameStep.initStep()
     })
 

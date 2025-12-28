@@ -20,8 +20,6 @@ export default class UiContainer extends Phaser.GameObjects.Group {
   }
 
   init() {
-    console.log('UI初期化')
-
     //グラフ背景
     this.scene.add.image(this.gameCenterX, 80, TextureKey.ParabolaGraphBg).setScale(0.25)
 
@@ -30,6 +28,11 @@ export default class UiContainer extends Phaser.GameObjects.Group {
 
     //中央の照準
     this.scene.add.image(this.gameCenterX, this.gameCenterY, TextureKey.Scope).setScale(0.25)
+
+    //ゲームの説明
+    this.scene.add
+      .image(this.gameCenterX, this.gameCenterY + 330, TextureKey.ShootDescription)
+      .setScale(0.4)
 
     //矢のパワーバー
     this.scene.add
