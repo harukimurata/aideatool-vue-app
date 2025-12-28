@@ -4,15 +4,15 @@ import UiText from '../../components/UiText'
 import TextureKey from '../../const/TextureKey'
 import { is3DBoxCollision } from '../../logic/collision'
 import GameStep from '../../logic/gameStep'
-import FortuneSlip from '../../sceneLogic/fortuneSlip'
 import {
   type ArrowState,
   type MoveState,
   arrowInitialVelocity,
   stepAirResistanceArrowFlight
 } from '../../logic/physics'
-
-import { generateRandomInt, generateRandomFloat } from '../../utils'
+import FortuneSlip from '../../sceneLogic/fortuneSlip'
+import ResultContainer from '../../sceneLogic/pinpointShoot/result'
+import { generateRandomFloat, generateRandomInt } from '../../utils'
 
 const BOW_DRAW_POWER_BAR_MOVE_VALUE = 3.75 // px
 const BOW_SPRING_CONSTANT = 300 // N/m
@@ -57,6 +57,9 @@ export default class GameMain extends Phaser.GameObjects.Group {
 
   //発射までのステップ
   gameStep!: GameStep
+
+  //結果表示管理
+  ResultContainer!: ResultContainer
 
   //おみくじ管理
   fortuneSlip!: FortuneSlip
@@ -128,6 +131,7 @@ export default class GameMain extends Phaser.GameObjects.Group {
 
   public initGameUi() {
     this.gameStep = GameStep.getInstance()
+    this.ResultContainer = ResultContainer.getInstance()
     this.fortuneSlip = FortuneSlip.getInstance()
 
     //背景
@@ -169,7 +173,7 @@ export default class GameMain extends Phaser.GameObjects.Group {
     this.scopeMoveButtonUp = new ImageButton(
       this.scene,
       105,
-      this.gameCenterY / 2 + 400,
+      this.gameCenterY / 2 + 340,
       TextureKey.ScopeArrowOff,
       TextureKey.ScopeArrowOn,
       () => {},
@@ -177,12 +181,12 @@ export default class GameMain extends Phaser.GameObjects.Group {
       () => {
         this.setArrowVerticalAngle(true)
       }
-    ).setScale(0.2)
+    ).setScale(0.19)
 
     this.scopeMoveButtonDown = new ImageButton(
       this.scene,
       105,
-      this.gameCenterY / 2 + 500,
+      this.gameCenterY / 2 + 440,
       TextureKey.ScopeArrowOff,
       TextureKey.ScopeArrowOn,
       () => {},
@@ -191,13 +195,13 @@ export default class GameMain extends Phaser.GameObjects.Group {
         this.setArrowVerticalAngle(false)
       }
     )
-      .setScale(0.2)
+      .setScale(0.19)
       .setAngle(180)
 
     this.scopeMoveButtonRight = new ImageButton(
       this.scene,
       160,
-      this.gameCenterY / 2 + 450,
+      this.gameCenterY / 2 + 390,
       TextureKey.ScopeArrowOff,
       TextureKey.ScopeArrowOn,
       () => {},
@@ -206,13 +210,13 @@ export default class GameMain extends Phaser.GameObjects.Group {
         this.setArrowDirection(true)
       }
     )
-      .setScale(0.2)
+      .setScale(0.19)
       .setAngle(90)
 
     this.scopeMoveButtonLeft = new ImageButton(
       this.scene,
       50,
-      this.gameCenterY / 2 + 450,
+      this.gameCenterY / 2 + 390,
       TextureKey.ScopeArrowOff,
       TextureKey.ScopeArrowOn,
       () => {},
@@ -221,14 +225,14 @@ export default class GameMain extends Phaser.GameObjects.Group {
         this.setArrowDirection(false)
       }
     )
-      .setScale(0.2)
+      .setScale(0.19)
       .setAngle(270)
 
     //発射ボタン
     this.shootButton = new ImageButton(
       this.scene,
       this.gameCenterX,
-      this.gameCenterY + 255,
+      this.gameCenterY + 205,
       TextureKey.ShootOn,
       TextureKey.ShootOff,
       () => {
@@ -341,7 +345,7 @@ export default class GameMain extends Phaser.GameObjects.Group {
 
     this.windDirectionZ = Fz
     this.windDirectionX = Fx
-    console.log('windDirectionX', this.windDirectionX, 'windDirectionZ', this.windDirectionZ)
+    //console.log('windDirectionX', this.windDirectionX, 'windDirectionZ', this.windDirectionZ)
   }
 
   /**
@@ -474,17 +478,22 @@ export default class GameMain extends Phaser.GameObjects.Group {
     )
     if (result.collision) {
       const textureNo = generateRandomInt(0, RESULT_IMAGE_KEYS.length - 1)
-      this.showResult(RESULT_IMAGE_KEYS[textureNo])
+      this.showResult(
+        result.distanceZ,
+        result.distanceX,
+        result.distanceY,
+        RESULT_IMAGE_KEYS[textureNo]
+      )
     }
 
     if (this.arrowState.z > 45) {
-      console.log(result)
-      this.showResult(TextureKey.NengaHazure)
+      //console.log(result)
+      this.showResult(result.distanceZ, result.distanceX, result.distanceY, TextureKey.NengaHazure)
     }
 
     if (this.arrowState.y <= 0) {
-      console.log(result)
-      this.showResult(TextureKey.NengaHazure)
+      //console.log(result)
+      this.showResult(result.distanceZ, result.distanceX, result.distanceY, TextureKey.NengaHazure)
     }
   }
 
@@ -550,10 +559,17 @@ export default class GameMain extends Phaser.GameObjects.Group {
   }
 
   //結果表示
-  private showResult(resultImage?: string) {
+  // private showResult(resultImage?: string) {
+  //   this.inactiveGameButtons()
+  //   this.fortuneSlip.setResult(resultImage)
+  //   this.fortuneSlip.animation()
+  //   this.gameStep.nextStep()
+  // }
+
+  private showResult(z: number, x: number, y: number, resultImage?: string) {
     this.inactiveGameButtons()
     this.fortuneSlip.setResult(resultImage)
-    this.fortuneSlip.animation()
+    this.ResultContainer.setResult(z, x, y)
     this.gameStep.nextStep()
   }
 
