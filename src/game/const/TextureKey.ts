@@ -50,8 +50,8 @@ enum TextureKey {
   PowerBar = 'power_bar',
   PowerLevel = 'power_level',
   Scope = 'scope',
-  ScopeArrowOff = 'scope_arrow_off',
-  ScopeArrowOn = 'scope_arrow_on',
+  ScopeArrowOff = 'modern_arrow_off',
+  ScopeArrowOn = 'modern_arrow_on',
   PinpointShooterBg = 'pinpoint_shooter_bg',
   ParabolaGraphBg = 'parabola_graph_bg',
   HitArea = 'hit_area',
@@ -61,7 +61,14 @@ enum TextureKey {
   HitObject = 'hit_object',
   ShootOn = 'shoot_on',
   ShootOff = 'shoot_off',
-  WindDirection = 'wind_direction'
+  ShootResult = 'shoot_result',
+  ShootResultNextOn = 'shoot_result_next_on',
+  ShootResultNextOff = 'shoot_result_next_off',
+  ShootDescription = 'shoot_description',
+  WindDirection = 'wind_direction',
+  NewYear2026Sho = 'atari_sho_0',
+  NewYear2026Chu = 'atari_chu_0',
+  NewYear2026Dai = 'atari_dai_0'
 }
 
 export default TextureKey

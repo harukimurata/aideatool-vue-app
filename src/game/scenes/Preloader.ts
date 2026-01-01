@@ -86,8 +86,8 @@ export class Preloader extends Scene {
     this.load.image(TextureKey.PowerBar, 'image/pinpointShooter/power_bar.png')
     this.load.image(TextureKey.PowerLevel, 'image/pinpointShooter/power_level.png')
     this.load.image(TextureKey.Scope, 'image/pinpointShooter/scope.png')
-    this.load.image(TextureKey.ScopeArrowOff, 'image/pinpointShooter/scope_arrow_off.png')
-    this.load.image(TextureKey.ScopeArrowOn, 'image/pinpointShooter/scope_arrow_on.png')
+    this.load.image(TextureKey.ScopeArrowOff, 'image/pinpointShooter/modern_arrow_off.png')
+    this.load.image(TextureKey.ScopeArrowOn, 'image/pinpointShooter/modern_arrow_on.png')
     this.load.image(TextureKey.PinpointShooterBg, 'image/pinpointShooter/pinpoint_shooter_bg.png')
     this.load.image(TextureKey.ParabolaGraphBg, 'image/pinpointShooter/parabola_graph_bg.png')
     this.load.image(TextureKey.HitArea, 'image/pinpointShooter/hit_area.png')
@@ -97,7 +97,17 @@ export class Preloader extends Scene {
     this.load.image(TextureKey.HitObject, 'image/pinpointShooter/hit_object.png')
     this.load.image(TextureKey.ShootOn, 'image/pinpointShooter/shoot_on.png')
     this.load.image(TextureKey.ShootOff, 'image/pinpointShooter/shoot_off.png')
+    this.load.image(TextureKey.ShootResultNextOn, 'image/pinpointShooter/shoot_result_next_on.png')
+    this.load.image(
+      TextureKey.ShootResultNextOff,
+      'image/pinpointShooter/shoot_result_next_off.png'
+    )
+    this.load.image(TextureKey.ShootResult, 'image/pinpointShooter/shoot_result.png')
+    this.load.image(TextureKey.ShootDescription, 'image/pinpointShooter/shoot_description.png')
     this.load.image(TextureKey.WindDirection, 'image/pinpointShooter/wind_direction.png')
+    this.load.image(TextureKey.NewYear2026Sho, 'image/pinpointShooter/atari_sho_0.png')
+    this.load.image(TextureKey.NewYear2026Chu, 'image/pinpointShooter/atari_chu_0.png')
+    this.load.image(TextureKey.NewYear2026Dai, 'image/pinpointShooter/atari_dai_0.png')
   }
 
   create() {
