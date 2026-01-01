@@ -20,6 +20,11 @@ const BOW_DRAW_DISTANCE = 0.005 // m 変数で決めるようにする
 const ARROW_MASS = 0.05 // kg
 const ARROW_HEAD_SIZE = 0.03 // m
 
+const MIN_WINDOW_POWER = 0.1
+const MAX_WINDOW_POWER = 3.0
+
+const MAX_ARROW_DISTANCE = 45 // m
+
 const TARGET_POS_Z = 40 // m
 const TARGET_POS_X = 0 // m
 const TARGET_POS_Y = 2 // m
@@ -43,6 +48,16 @@ const PARABOLA_GRAPH_BASE_Y = 120 // グラフの基準Y座標
 const PARABOLA_DEPTH_PX = 200 // 開始(y=gameCenterY+200)からターゲット(y=gameCenterY)までのピクセル幅
 const PARABOLA_X_SCALE = 8 // 水平方向のメートル->ピクセル変換
 const PARABOLA_HEIGHT_SCALE = 20 // 高さ(m) -> ピクセル変換（ターゲット高さを基準にする）
+
+const MAX_ARROW_VERTICAL_ANGLE = 60 // 矢の垂直方向の最大角度
+const MIN_ARROW_VERTICAL_ANGLE = 20 // 矢の垂直方向の最小角度
+
+const MAX_ARROW_HORIZONTAL_ANGLE = 20 // 矢の水平方向の最大角度
+
+const MAX_BOW_DRAW_DISTANCE = 100 // 弓を引く強さの最大値
+const MIN_BOW_DRAW_DISTANCE = 0 // 弓を引く強さの最大値
+
+const GROUND_LEVEL_Y = 0 // 地面の高さ
 
 const RESULT_IMAGE_KEYS: string[] = [
   TextureKey.NewYear2026Sho,
@@ -333,7 +348,7 @@ export default class GameMain extends Phaser.GameObjects.Group {
    * 風の強さ・方向をランダムに決める
    */
   private calcWindDirection() {
-    const F = Number(generateRandomFloat(0.1, 3.0).toFixed(2)) // N 風の力の大きさ
+    const F = Number(generateRandomFloat(MIN_WINDOW_POWER, MAX_WINDOW_POWER).toFixed(2)) // N 風の力の大きさ
     const angleDeg = generateRandomInt(0, 360) // degrees 風の向き
 
     this.windDirectionImg.setAngle(angleDeg)
@@ -354,10 +369,10 @@ export default class GameMain extends Phaser.GameObjects.Group {
   private setArrowVerticalAngle(isUp: boolean) {
     this.arrowVerticalAngle += isUp ? -SCOPE_MOVE_SPEED : SCOPE_MOVE_SPEED
 
-    if (this.arrowVerticalAngle <= -60) {
-      this.arrowVerticalAngle = -60
-    } else if (this.arrowVerticalAngle > 20) {
-      this.arrowVerticalAngle = 20
+    if (this.arrowVerticalAngle <= -MAX_ARROW_VERTICAL_ANGLE) {
+      this.arrowVerticalAngle = -MAX_ARROW_VERTICAL_ANGLE
+    } else if (this.arrowVerticalAngle > MIN_ARROW_VERTICAL_ANGLE) {
+      this.arrowVerticalAngle = MIN_ARROW_VERTICAL_ANGLE
     }
 
     this.scopePosY = this.gameCenterY + this.arrowVerticalAngle * -1
@@ -372,10 +387,10 @@ export default class GameMain extends Phaser.GameObjects.Group {
   private setArrowDirection(isRight: boolean) {
     this.arrowHorizontalAngle += isRight ? SCOPE_MOVE_SPEED : -SCOPE_MOVE_SPEED
 
-    if (this.arrowHorizontalAngle <= -20) {
-      this.arrowHorizontalAngle = -20
-    } else if (this.arrowHorizontalAngle > 20) {
-      this.arrowHorizontalAngle = 20
+    if (this.arrowHorizontalAngle <= -MAX_ARROW_HORIZONTAL_ANGLE) {
+      this.arrowHorizontalAngle = -MAX_ARROW_HORIZONTAL_ANGLE
+    } else if (this.arrowHorizontalAngle > MAX_ARROW_HORIZONTAL_ANGLE) {
+      this.arrowHorizontalAngle = MAX_ARROW_HORIZONTAL_ANGLE
     }
 
     this.scopePosX = this.gameCenterX + this.arrowHorizontalAngle * -1
@@ -392,7 +407,10 @@ export default class GameMain extends Phaser.GameObjects.Group {
 
     this.bowDrawPowerBarImg_posY -= BOW_DRAW_POWER_BAR_MOVE_VALUE * this.bowDrawDistanceMoveSpeed
     this.bowDrawPowerBarImg.setY(this.bowDrawPowerBarImg_posY)
-    if (this.bowDrawDistance >= 100 || this.bowDrawDistance < 0) {
+    if (
+      this.bowDrawDistance >= MAX_BOW_DRAW_DISTANCE ||
+      this.bowDrawDistance < MIN_BOW_DRAW_DISTANCE
+    ) {
       this.bowDrawDistanceMoveSpeed = this.bowDrawDistanceMoveSpeed * -1
     }
   }
@@ -486,12 +504,12 @@ export default class GameMain extends Phaser.GameObjects.Group {
       )
     }
 
-    if (this.arrowState.z > 45) {
+    if (this.arrowState.z > MAX_ARROW_DISTANCE) {
       //console.log(result)
       this.showResult(result.distanceZ, result.distanceX, result.distanceY, TextureKey.NengaHazure)
     }
 
-    if (this.arrowState.y <= 0) {
+    if (this.arrowState.y <= GROUND_LEVEL_Y) {
       //console.log(result)
       this.showResult(result.distanceZ, result.distanceX, result.distanceY, TextureKey.NengaHazure)
     }
