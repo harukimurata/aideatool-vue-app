@@ -65,6 +65,10 @@ export class PinpointShooterScene extends Scene {
     //UI初期化
     this.uiContainer.init()
 
+    //UIコンテナの取得
+    //UIコンテナとの描画順の関係で個別で取得する
+    this.gameMain.getUiContainerInstance()
+
     //ゲーム内の状態が変化するUIの初期化
     this.gameMain.initGameVariableUi()
 
