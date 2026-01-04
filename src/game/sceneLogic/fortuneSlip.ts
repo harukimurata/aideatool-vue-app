@@ -39,6 +39,7 @@ export default class FortuneSlip extends Phaser.GameObjects.Group {
     this.scratchResult = this.scene.add
       .image(this.gameCenterX, this.gameCenterY, '')
       .setAlpha(0)
+      .setDepth(98)
       .setVisible(false)
 
     //初期化ボタン
@@ -55,7 +56,9 @@ export default class FortuneSlip extends Phaser.GameObjects.Group {
           onClickFunc()
         }
       }
-    ).setScale(0.2)
+    )
+      .setDepth(99)
+      .setScale(0.2)
     this.initButton.setVisible(false)
     this.scene.add.existing(this.initButton)
   }
