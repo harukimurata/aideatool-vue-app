@@ -12,6 +12,7 @@ import {
 } from '../../logic/physics'
 import FortuneSlip from '../../sceneLogic/fortuneSlip'
 import ResultContainer from '../../sceneLogic/pinpointShoot/result'
+import UiContainer from '../../sceneLogic/pinpointShoot/ui'
 import { generateRandomFloat, generateRandomInt } from '../../utils'
 
 const BOW_DRAW_POWER_BAR_MOVE_VALUE = 3.75 // px
@@ -59,6 +60,9 @@ const MIN_BOW_DRAW_DISTANCE = 0 // 弓を引く強さの最大値
 
 const GROUND_LEVEL_Y = 0 // 地面の高さ
 
+const GRAPH_DEPTH_UP_ZINDEX = 11
+const GRAPH_DEPTH_DOWN_ZINDEX = 10
+
 const RESULT_IMAGE_KEYS: string[] = [
   TextureKey.NewYear2026Sho,
   TextureKey.NewYear2026Chu,
@@ -78,6 +82,9 @@ export default class GameMain extends Phaser.GameObjects.Group {
 
   //おみくじ管理
   fortuneSlip!: FortuneSlip
+
+  //UIをまとめているクラス
+  uiContainer!: UiContainer
 
   //ゲームの背景
   pinpointShooterBg!: GameObjects.Image
@@ -271,6 +278,11 @@ export default class GameMain extends Phaser.GameObjects.Group {
     //ゲーム視点の放物線の初期化
     this.arrowParabola = this.scene.add.graphics()
     this.arrowParabola.lineStyle(2, 0xff0000, 1)
+  }
+
+  // UIコンテナの取得
+  public getUiContainerInstance() {
+    this.uiContainer = UiContainer.getInstance()
   }
 
   //ゲームの初期化・リセット
@@ -473,7 +485,7 @@ export default class GameMain extends Phaser.GameObjects.Group {
     )
 
     // 矢の放物線のグラフ描画更新
-    this.arrowSampleParabolaGraphUpdate(this.arrowState.z, this.arrowState.y)
+    this.arrowSampleParabolaGraphUpdate(this.arrowState.z, this.arrowState.x, this.arrowState.y)
     //this.arrowParabolaUpdate(this.arrowState.x, this.arrowState.z)
 
     let result = is3DBoxCollision(
@@ -525,16 +537,23 @@ export default class GameMain extends Phaser.GameObjects.Group {
   }
 
   // 矢の放物線のグラフ描画更新
-  arrowSampleParabolaGraphUpdate(posZ: number, posY: number) {
+  arrowSampleParabolaGraphUpdate(posZ: number, posX: number, posY: number) {
     this.arrowSampleParabolaGraph.lineTo(
       PARABOLA_GRAPH_BASE_X + posZ * POINT_GRAPH_SCALE,
       PARABOLA_GRAPH_BASE_Y - posY * POINT_GRAPH_SCALE
     )
     this.arrowSampleParabolaGraph.strokePath()
+
+    if (posX < 0) {
+      this.arrowSampleParabolaGraph.setDepth(GRAPH_DEPTH_DOWN_ZINDEX)
+      this.uiContainer.updateHitSampleZIndex(GRAPH_DEPTH_UP_ZINDEX)
+    }
   }
 
   // 矢の放物線のグラフクリア
   arrowSampleParabolaGraphClear() {
+    this.uiContainer.updateHitSampleZIndex(GRAPH_DEPTH_DOWN_ZINDEX)
+    this.arrowSampleParabolaGraph.setDepth(GRAPH_DEPTH_UP_ZINDEX)
     this.arrowSampleParabolaGraph.clear()
     this.arrowSampleParabolaGraph.lineStyle(2, 0xff0000, 1)
   }

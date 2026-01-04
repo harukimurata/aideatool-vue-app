@@ -2,6 +2,8 @@ import { GameObjects } from 'phaser'
 import TextureKey from '../../const/TextureKey'
 
 export default class UiContainer extends Phaser.GameObjects.Group {
+  private static instance: UiContainer
+
   private gameCenterX = 0
   private gameCenterY = 0
 
@@ -10,13 +12,21 @@ export default class UiContainer extends Phaser.GameObjects.Group {
   hitAreaHut!: GameObjects.Image
   hitSample!: GameObjects.Image
 
-  //放物線のグラフ
-  arrowMoveParabolaGraph!: GameObjects.Graphics
-
   constructor(scene: Phaser.Scene, gameCenterX: number, gameCenterY: number) {
     super(scene)
     this.gameCenterX = gameCenterX
     this.gameCenterY = gameCenterY
+
+    UiContainer.instance = this
+  }
+
+  // シングルトンの取得
+  // ほかのクラスでも同じインスタンスを使いたい場合はこれを使う
+  public static getInstance(): UiContainer {
+    if (!this.instance) {
+      this.instance = new UiContainer(this.instance, 200, 200)
+    }
+    return this.instance
   }
 
   init() {
@@ -24,7 +34,7 @@ export default class UiContainer extends Phaser.GameObjects.Group {
     this.scene.add.image(this.gameCenterX, 80, TextureKey.ParabolaGraphBg).setScale(0.25)
 
     //グラフ上のヒットエリア
-    this.scene.add.image(470, 98, TextureKey.HitSample).setScale(0.1)
+    this.hitSample = this.scene.add.image(470, 98, TextureKey.HitSample).setScale(0.1)
 
     //中央の照準
     this.scene.add.image(this.gameCenterX, this.gameCenterY, TextureKey.Scope).setScale(0.25)
@@ -59,5 +69,10 @@ export default class UiContainer extends Phaser.GameObjects.Group {
     points.forEach((p) => {
       graphics.fillCircle(p.x, p.y, 4) // 半径4pxの円
     })
+  }
+
+  // ヒットサンプルのZインデックス更新
+  public updateHitSampleZIndex(depth: number) {
+    this.hitSample.setDepth(depth)
   }
 }
