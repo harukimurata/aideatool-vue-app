@@ -169,8 +169,8 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import { type RestaurantResponse, type RestaurantCart } from '@/interface/Restaurant'
-import { productGet } from '../../api/restaurant'
-import { useRestaurantCartStore } from '../../stores/restaurantCart'
+import { productGet } from '@/api/restaurant'
+import { useRestaurantCartStore } from '@/stores/restaurantCart'
 
 const cartStore = useRestaurantCartStore()
 

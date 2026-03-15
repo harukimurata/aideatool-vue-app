@@ -57,7 +57,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import { type GachaResponse } from '@/interface/Gacha'
-import { omikuji } from '../../api/omikuji'
+import { omikuji } from '@/api/omikuji'
 
 const isloading = ref(false)
 const omikujiResult = ref<GachaResponse | null>(null)

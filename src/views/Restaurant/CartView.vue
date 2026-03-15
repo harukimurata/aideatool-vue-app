@@ -71,7 +71,7 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { useRestaurantCartStore } from '../../stores/restaurantCart'
+import { useRestaurantCartStore } from '@/stores/restaurantCart'
 import { useRestaurantHistoryStore } from '@/stores/restaurantHistory'
 import { useRouter } from 'vue-router'
 
