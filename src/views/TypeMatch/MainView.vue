@@ -1,8 +1,11 @@
 <template>
   <header-component title="TypeMatch"></header-component>
   <div class="columns is-mobile is-centered mx-0">
-    <div class="column is-11 mt-3 mx-1">
+    <div class="column mt-3">
       <div class="card">
+        <header class="card-header">
+          <p class="card-header-title">相性チェッカー</p>
+        </header>
         <div class="card-content">
           <p>自分のタイプ</p>
           <div v-for="attackSelectType in 2" class="select mb-4 mr-1">
@@ -85,13 +88,13 @@
           <hr />
           <p>メインタイプ相性</p>
           <div class="columns is-mobile mb-0">
-            <div class="column is-4">
-              <h1 class="text-nowrap">相手のタイプ</h1>
+            <div class="column is-4 text-nowrap">
+              <h1>相手のタイプ</h1>
               <p class="cell-height align-center">{{ getTypeName(form.defenseTypes[0]) }}</p>
               <p class="cell-height align-center">{{ getTypeName(form.defenseTypes[1]) }}</p>
             </div>
-            <div class="column is-4">
-              <h1 class="text-nowrap">自分のタイプ</h1>
+            <div class="column is-4 text-nowrap">
+              <h1>自分のタイプ</h1>
               <div class="main-cell-height align-center">
                 <p>{{ getTypeName(form.attackTypes[0]) }}</p>
                 <p>{{ getTypeName(form.attackTypes[1]) }}</p>
