@@ -33,6 +33,13 @@
               <button class="button is-fullwidth" @click="toLink('Game')">ゲーム</button>
             </div>
           </div>
+          <div class="columns">
+            <div class="column is-half is-offset-one-quarter">
+              <button class="button is-fullwidth" @click="toLink('TypeMatcher')">
+                相性チェック
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

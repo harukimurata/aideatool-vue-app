@@ -1,0 +1,20 @@
+[
+  { "type": 0, "typeName": "ノーマル" },
+  { "type": 1, "typeName": "ほのお" },
+  { "type": 2, "typeName": "みず" },
+  { "type": 3, "typeName": "でんき" },
+  { "type": 4, "typeName": "くさ" },
+  { "type": 5, "typeName": "こおり" },
+  { "type": 6, "typeName": "かくとう" },
+  { "type": 7, "typeName": "どく" },
+  { "type": 8, "typeName": "じめん" },
+  { "type": 9, "typeName": "ひこう" },
+  { "type": 10, "typeName": "エスパー" },
+  { "type": 11, "typeName": "むし" },
+  { "type": 12, "typeName": "いわ" },
+  { "type": 13, "typeName": "ゴースト" },
+  { "type": 14, "typeName": "ドラゴン" },
+  { "type": 15, "typeName": "あく" },
+  { "type": 16, "typeName": "はがね" },
+  { "type": 17, "typeName": "フェアリー" }
+]

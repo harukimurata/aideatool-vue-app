@@ -88,6 +88,11 @@ const router = createRouter({
       name: 'Game',
       component: () => import('../views/Game/MainView.vue')
     },
+    {
+      path: '/type_matcher',
+      name: 'TypeMatcher',
+      component: () => import('../views/TypeMatch/MainView.vue')
+    },
     // {
     //   path: '/nengajou',
     //   name: 'Nengajou',
