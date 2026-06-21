@@ -22,12 +22,12 @@
             <div class="column is-half is-offset-one-quarter">
               <button class="button is-fullwidth" @click="toLink('Human')">Human</button>
             </div>
-          </div>
+          </div> -->
           <div class="columns">
             <div class="column is-half is-offset-one-quarter">
               <button class="button is-fullwidth" @click="toLink('Restaurant')">レストラン</button>
             </div>
-          </div> -->
+          </div>
           <div class="columns">
             <div class="column is-half is-offset-one-quarter">
               <button class="button is-fullwidth" @click="toLink('Game')">ゲーム</button>
